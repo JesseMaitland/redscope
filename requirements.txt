@@ -1,0 +1,10 @@
+numpy==1.17.3
+pandas==0.25.3
+psycopg2-binary==2.8.4
+pyaml==19.4.1
+python-dateutil==2.8.0
+python-dotenv==0.10.3
+pytz==2019.3
+PyYAML==5.1.2
+rambo-py==1.0.5
+six==1.12.0
