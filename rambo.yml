@@ -9,6 +9,7 @@ commands:
     - db
     - up
     - down
+    - project
     help: Objects on which the actions are preformed
   --env-file:
     help: provide this optional argument to specify a custom env file. if not provided loads .env in cwd.

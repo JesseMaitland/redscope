@@ -44,5 +44,5 @@ class InitiateDb:
             raise Exception
 
 
-class MigrationTable:
+class Migration:
     pass
