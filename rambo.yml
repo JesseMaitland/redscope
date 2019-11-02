@@ -3,6 +3,7 @@ commands:
     choices:
     - init
     - migrate
+    - new
     help: Actions which can be performed
   object:
     choices:
@@ -10,8 +11,11 @@ commands:
     - up
     - down
     - project
+    - migration
     help: Objects on which the actions are preformed
   --env-file:
     help: provide this optional argument to specify a custom env file. if not provided loads .env in cwd.
   --env-var:
     help: provide this optional agument to specify a custom db connection environment variable. default is REDSCOPE_DB_URL.
+  --name:
+    help: provide a name for the migration file
