@@ -4,7 +4,6 @@ commands:
     - init
     - migrate
     - new
-    - list
     help: Actions which can be performed
   object:
     choices:

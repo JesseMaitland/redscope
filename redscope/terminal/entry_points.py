@@ -1,6 +1,7 @@
 from .terminal import init_redscope_env, get_terminal_logger
 from redscope.database import Migration, DDL, InitiateDb
 from redscope.project import project, logger_factory
+from redscope import rambo_path
 from rambo import provide_cmd_args
 
 logger = get_terminal_logger(__name__)
@@ -30,7 +31,7 @@ def init_project():
     exit()
 
 
-@provide_cmd_args()
+@provide_cmd_args(rambo_path)
 def new_migration(cmd_args):
     if not cmd_args.name:
         logger.info("the --name parameter must be provided when creating new migration")
@@ -78,5 +79,7 @@ def migrate_up(db_conn):
 @init_redscope_env
 def migrate_down(db_conn):
     last_applied_migration = Migration.select_last(db_conn)
+    logger.info(f"migrating down from {last_applied_migration.path.as_posix()}")
     last_applied_migration.execute_down(db_conn)
     last_applied_migration.delete(db_conn)
+    logger.info(f"migration down from {last_applied_migration.path.as_posix()} success!")
