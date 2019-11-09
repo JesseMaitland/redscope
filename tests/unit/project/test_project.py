@@ -26,7 +26,7 @@ class TestMigrationDirs(TestCase):
         self.assertEqual(LOGGING_PATH, self.project_folders.log_path)
 
 
-class TestMigrationManager(TestCase):
+class TestProjectFunctions(TestCase):
 
     def test_file_name(self):
         file_name = project.create_file_name('foo')
@@ -49,3 +49,5 @@ class TestMigrationManager(TestCase):
         file_path = Path.cwd() / "1234-spam"
         name = project.parse_file_name(file_path)
         self.assertEqual('spam', name)
+
+
