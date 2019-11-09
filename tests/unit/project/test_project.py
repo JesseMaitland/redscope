@@ -17,7 +17,7 @@ class TestMigrationDirs(TestCase):
         self.assertEqual(ROOT_PATH, self.project_folders.root)
 
     def test_ddl_path(self):
-        self.assertEqual(DDL_PATH, self.project_folders.ddl)
+        self.assertEqual(DDL_PATH, self.project_folders.ddl_path)
 
     def test_migration_path(self):
         self.assertEqual(MIGRATION_PATH, self.project_folders.migrations_path)
