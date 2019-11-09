@@ -28,28 +28,24 @@ class TestMigrationDirs(TestCase):
 
 class TestMigrationManager(TestCase):
 
-    def setUp(self) -> None:
-        project_folders = project.Folders()
-        self.file_manager = project.Manager(project_folders)
-
     def test_file_name(self):
-        file_name = self.file_manager.file_name('foo')
+        file_name = project.create_file_name('foo')
         file_key, file_name = file_name.split('-')
         self.assertTrue(int, file_key.isdigit())
         self.assertTrue(file_name, str)
 
     def test_file_key(self):
-        file_name = "12345678-foo"
-        result = self.file_manager.migration_key(file_name)
+        file_path = Path.cwd() / "12345678-foo"
+        result = project.parse_file_key(file_path)
         self.assertEqual(12345678, result)
 
     def test_file_key_and_name(self):
-        file_name = "12345678-foo"
-        file_key, file_name = self.file_manager.migration_key_and_name(file_name)
+        file_path = Path.cwd() / "12345678-foo"
+        file_key, file_name = project.parse_file_key_and_name(file_path)
         self.assertEqual(12345678, file_key)
         self.assertEqual('foo', file_name)
 
     def test_get_file_name(self):
-        file_name = "1234-spam"
-        name = self.file_manager.migration_name(file_name)
+        file_path = Path.cwd() / "1234-spam"
+        name = project.parse_file_name(file_path)
         self.assertEqual('spam', name)
