@@ -47,4 +47,9 @@ class TestMigrationManager(TestCase):
         file_name = "12345678-foo"
         file_key, file_name = self.file_manager.migration_key_and_name(file_name)
         self.assertEqual(12345678, file_key)
-        self.assertEqual(file_name, 'foo')
+        self.assertEqual('foo', file_name)
+
+    def test_get_file_name(self):
+        file_name = "1234-spam"
+        name = self.file_manager.migration_name(file_name)
+        self.assertEqual('spam', name)

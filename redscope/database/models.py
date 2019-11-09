@@ -16,6 +16,7 @@ class DDL:
     def create_migration_table(self) -> str:
         return self.migration_table_path.read_text()
 
+
 class DML:
 
     def __init__(self):
@@ -23,6 +24,7 @@ class DML:
         self.insert_path = self.root / "insert.sql"
         self.delete_path = self.root / "delete.sql"
         self.select_path = self.root / "select.sql"
+        self.select_last_path = self.root / "select_last.sql"
 
     @property
     def insert(self):
@@ -35,6 +37,10 @@ class DML:
     @property
     def select(self):
         return self.select_path.read_text()
+
+    @property
+    def select_last(self):
+        return self.select_last_path.read_text()
 
 
 class InitiateDb:
@@ -64,23 +70,83 @@ class InitiateDb:
             raise Exception
 
 
+# TODO: lots of duplication going on here. Can probably be refactored.
 class Migration:
 
-    def __init__(self, key: int, name: str, path: Path, dml: DML):
+    dml: DML = DML()
+
+    def __init__(self, key: int, name: str, path: Path):
         self.key = key
         self.name = name
         self.path = path
-        self.dml = dml
 
-    def select(self, db_connection):
+    @classmethod
+    def select_all(cls, db_connection):
         cursor = db_connection.cursor()
-        cursor.execute(self.dml.select)
-        cursor.fetchall()
-        result = [r for r in cursor]
-        result.sort()
-        return result
+        try:
+            cursor.execute(cls.dml.select)
+            result = [Migration(
+                key=r[0],
+                name=r[1],
+                path=Path(r[2]).absolute()
+            ) for r in cursor.fetchall()]
+
+            return result
+        except Exception:
+            db_connection.rollback()
+            raise
 
     def insert(self, db_connection):
         cursor = db_connection.cursor()
-        cursor.execute(self.dml.insert, (self.key, self.name, self.path))
-        db_connection.commit()
+        try:
+            relative_path = self.path.relative_to(Path.cwd().as_posix()).as_posix()
+            cursor.execute(self.dml.insert, [self.key, self.name, relative_path])
+            db_connection.commit()
+        except Exception:
+            db_connection.rollback()
+            raise
+
+    def delete(self, db_connection):
+        cursor = db_connection.cursor()
+        try:
+            cursor.execute(self.dml.delete, [self.key])
+            db_connection.commit()
+        except Exception:
+            db_connection.rollback()
+            raise
+
+    @classmethod
+    def select_last(cls, db_connection) -> 'Migration':
+        cursor = db_connection.cursor()
+        try:
+            cursor.execute(cls.dml.select_last)
+            result = cursor.fetchone()
+
+            return Migration(
+                key=result[0],
+                name=result[1],
+                path=Path(result[2]).absolute())
+
+        except Exception:
+            db_connection.rollback()
+            raise
+
+    def execute_up(self, db_connection):
+        cursor = db_connection.cursor()
+        try:
+            migration = self.path.joinpath('up.sql').read_text()
+            cursor.execute(migration)
+            db_connection.commit()
+        except Exception:
+            db_connection.rollback()
+            raise
+
+    def execute_down(self, db_connection):
+        cursor = db_connection.cursor()
+        try:
+            migration = self.path.joinpath('down.sql').read_text()
+            cursor.execute(migration)
+            db_connection.commit()
+        except Exception:
+            db_connection.rollback()
+            raise

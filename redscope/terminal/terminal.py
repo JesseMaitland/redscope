@@ -1,6 +1,16 @@
+from logging import Logger
 from redscope.database import models, db_connections
+from redscope.project import project, logger_factory
 from redscope import env
 from rambo import provide_cmd_args
+
+
+def get_terminal_logger(name: str) -> Logger:
+    folders = project.Folders()
+    folders.log_path.mkdir(exist_ok=True, parents=True)
+    folders.log_file.touch(exist_ok=True)
+
+    return logger_factory(folders.log_file, name)
 
 
 @provide_cmd_args()

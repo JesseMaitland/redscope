@@ -1,1 +1,1 @@
-INSERT INTO redscope.migrations(key, name, path) VALUES (?, ?, ?);
+INSERT INTO redscope.migrations(key, name, path) VALUES (%s, %s, %s);

@@ -1,1 +1,1 @@
-SELECT key FROM redscope.migrations ORDER BY key;
+SELECT key, name, path FROM redscope.migrations ORDER BY key;
