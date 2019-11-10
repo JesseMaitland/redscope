@@ -6,7 +6,6 @@ jobs:
     working_directory: ~/repo
     steps:
       - checkout
-
       - run:
           name: install dependencies
           command: |
@@ -19,6 +18,32 @@ jobs:
           name: run lint
           command: |
             make lint
+  job_deploy:
+    docker:
+      - image: circleci/python:3.6
+    working_directory: ~/repo
+    steps:
+      - checkout
+      - run:
+          name: install dependencies
+          command: |
+            make init
+      - run:
+          name: init .pypirc
+          command: |
+            echo -e "[pypi]" >> ~/.pypirc
+            echo -e "username = $PYPI_USERNAME" >> ~/.pypirc
+            echo -e "password = $PYPI_PASSWORD" >> ~/.pypirc
+      - run:
+          name: build
+          command: |
+            make build
+      - run:
+          name: upload to pypi
+          command: |
+            . venv/bin/activate
+            twine upload dist/*
+
 
 workflows:
   version: 2
@@ -28,6 +53,8 @@ workflows:
       - job_deploy:
           requires:
             - job_build
-          filters:
-            branches:
-              only: master
+        filters:
+          tags:
+            only: /[0-9]+(\.[0-9]+)*/
+          branches:
+            ignore: /.*/
