@@ -63,7 +63,5 @@ workflows:
           requires:
             - job_build
           filters:
-            branches:
-              ignore: /.*/
             tags:
               only: /^\d+\.\d+\.\d+$/
