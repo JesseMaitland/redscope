@@ -1,6 +1,6 @@
-version: 2.1
+version: 2
 jobs:
-  job_build:
+  build:
     docker:
       - image: circleci/python:3.6
     working_directory: ~/repo
@@ -18,7 +18,7 @@ jobs:
           name: run lint
           command: |
             make lint
-  job_deploy:
+  deploy:
     docker:
       - image: circleci/python:3.6
     working_directory: ~/repo
@@ -51,17 +51,19 @@ jobs:
             twine upload dist/*
 
 
-workflows:
+
   version: 2
-  build-and-deploy:
+  build_and_deploy:
     jobs:
-      - job_build:
+      - build:
           filters:
             tags:
-              only: /^\d+\.\d+\.\d+$/
-      - job_deploy:
+              only: /.*/
+      - deploy:
           requires:
-            - job_build
+            - build
           filters:
             tags:
-              only: /^\d+\.\d+\.\d+$/
+              only: /[0-9]+(\.[0-9]+)*/
+            branches:
+              ignore: /.*/
