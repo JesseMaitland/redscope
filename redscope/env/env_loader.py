@@ -13,6 +13,7 @@ def path_valid(env_file_path: Path) -> bool:
     return True
 
 
+# TODO: Refactor these to single method which takes path argument
 def load_default_env() -> bool:
     env_file_path = Path.cwd().absolute() / ".env"
 

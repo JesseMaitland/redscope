@@ -49,5 +49,3 @@ class TestProjectFunctions(TestCase):
         file_path = Path.cwd() / "1234-spam"
         name = project.parse_file_name(file_path)
         self.assertEqual('spam', name)
-
-

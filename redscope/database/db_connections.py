@@ -9,7 +9,7 @@ def exists(db_connection_string: str, connection_name: str = DEFAULT_DB_URL) -> 
         raise EnvironmentError(f"no connection string found in .env for {connection_name}")
     return True
 
-
+# TODO: refactor these to single method which takes optional default parameter
 def default() -> psycopg2.connect:
     db_connection_string = os.getenv(DEFAULT_DB_URL)
     if exists(db_connection_string):
