@@ -51,19 +51,20 @@ jobs:
             twine upload dist/*
 
 
-workflows:
-  version: 2
-  build-and-deploy:
-    jobs:
-      - job_build:
-        filters:
-          tags:
-            only: /.*/
-      - job_deploy:
-          requires:
-            - job_build
-          filters:
-            tags:
-              only: /[0-9]+(\.[0-9]+)*/
-            branches:
-              ignore: /.*/
+#workflows:
+#  version: 2
+#  build-and-deploy:
+#    jobs:
+#      - job_build:
+#        filters:
+#          tags:
+#            only: /.*/
+#      - job_deploy:
+#          requires:
+#            - job_build
+#          filters:
+#            tags:
+#              only: /[0-9]+(\.[0-9]+)*/
+#            branches:
+#              ignore: /.*/
+#
