@@ -53,8 +53,8 @@ workflows:
       - job_deploy:
           requires:
             - job_build
-        filters:
-          tags:
-            only: /[0-9]+(\.[0-9]+)*/
-          branches:
-            ignore: /.*/
+          filters:
+            tags:
+              only: /[0-9]+(\.[0-9]+)*/
+            branches:
+              ignore: /.*/
