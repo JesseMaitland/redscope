@@ -12,9 +12,13 @@ jobs:
           command: |
             make init
       - run:
-          name: run tests
+          name: run unit tests
           command: |
             make unit_test
+      - run:
+          name: run lint
+          command: |
+            make lint
 
 workflows:
   version: 2
