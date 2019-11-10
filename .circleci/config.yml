@@ -55,7 +55,7 @@ workflows:
   version: 2
   build-and-deploy:
     jobs:
-      - job_build
+      - job_build:
         filters:
           tags:
             only: /.*/
