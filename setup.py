@@ -3,7 +3,7 @@ import os
 from setuptools import setup, find_packages
 from setuptools.command.install import install
 
-VERSION = '0.1.4'
+VERSION = '0.1.5'
 
 
 class VerifyVersionCommand(install):
@@ -39,7 +39,7 @@ setup(
     license='MIT',
     packages=find_packages(exclude=('tests*', 'venv', 'database*')),
     scripts=["bin/redscope"],
-    download_url="",
+    download_url="https://github.com/JesseMaitland/redscope",
     long_description_content_type="text/markdown",
     python_requires='>=3',
     cmdclass={
