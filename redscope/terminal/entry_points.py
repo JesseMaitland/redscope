@@ -83,3 +83,21 @@ def migrate_down(db_conn):
     last_applied_migration.execute_down(db_conn)
     last_applied_migration.delete(db_conn)
     logger.info(f"migration down from {last_applied_migration.path.as_posix()} success!")
+
+
+@init_redscope_env
+def show_migrations(db_conn):
+    folders = project.Folders()
+    local_migrations = project.all_local_migrations(folders)
+    db_migrations = Migration.select_all(db_conn)
+    migrations_to_apply = project.all_outstanding_migrations(local_migrations, db_migrations)
+
+    if migrations_to_apply:
+        logger.info(f'the following migrations would be applied with "redscope migrate up"')
+        for migration in migrations_to_apply:
+            logger.info(migration.path.as_posix())
+        exit()
+    else:
+        logger.info("No migrations to apply, database is up to date")
+        exit()
+
