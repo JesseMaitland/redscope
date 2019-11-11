@@ -1,4 +1,5 @@
 from pathlib import Path
+import pandas as pd
 
 
 class DDL:
@@ -43,6 +44,29 @@ class DML:
         return self.select_last_path.read_text()
 
 
+class Catalog:
+
+    def __init__(self):
+        self.root_path: Path = Path(__file__).absolute().parent / "queries" / "catalog"
+        query_paths = self.root_path.glob('**/*.sql')
+        # set the query attributes
+        for path in query_paths:
+            print(path)
+            name = path.name.split('.')[0]
+            query_name = f"{name}_query"
+            query_value = path.read_text()
+
+            method_name = f"fetch_{name}_data"
+            method_pointer = self._method_maker(query_value)
+            setattr(self, query_name, query_value)
+            setattr(self, method_name, method_pointer)
+
+    def _method_maker(self, query):
+        def get_data(db_connection) -> pd.DataFrame:
+            return pd.read_sql(query, db_connection, parse_dates=True)
+        return get_data
+
+
 class InitiateDb:
 
     def __init__(self, ddl: DDL, db_connection):
@@ -72,7 +96,6 @@ class InitiateDb:
 
 # TODO: lots of duplication going on here. Can probably be refactored.
 class Migration:
-
     dml: DML = DML()
 
     def __init__(self, key: int, name: str, path: Path):
