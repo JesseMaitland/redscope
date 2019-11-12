@@ -56,7 +56,7 @@ class Catalog:
             query_name = f"{name}_query"
             query_value = path.read_text()
 
-            method_name = f"fetch_{name}_data"
+            method_name = f"fetch_{name}"
             method_pointer = self._method_maker(query_value)
             setattr(self, query_name, query_value)
             setattr(self, method_name, method_pointer)
