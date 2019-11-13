@@ -5,6 +5,7 @@ from redscope.project import project, logger_factory
 from redscope.introspection.schema import IntroSchema
 from redscope.introspection.users import IntroUsers
 from redscope.introspection.groups import IntroGroups
+from redscope.introspection.user_groups import IntroUserGroup
 from redscope import rambo_path
 from rambo import provide_cmd_args
 
@@ -119,3 +120,6 @@ def intro_db(db_conn):
 
     intro_groups = IntroGroups(db_conn, db_catalog, folders)
     intro_groups.execute()
+
+    intro_user_groups = IntroUserGroup(db_conn, db_catalog, folders)
+    intro_user_groups.execute()
