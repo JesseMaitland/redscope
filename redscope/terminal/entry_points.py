@@ -6,6 +6,7 @@ from redscope.introspection.schema import IntroSchema
 from redscope.introspection.users import IntroUsers
 from redscope.introspection.groups import IntroGroups
 from redscope.introspection.user_groups import IntroUserGroup
+from redscope.introspection.tables import IntroTables
 from redscope import rambo_path
 from rambo import provide_cmd_args
 
@@ -123,3 +124,11 @@ def intro_db(db_conn):
 
     intro_user_groups = IntroUserGroup(db_conn, db_catalog, folders)
     intro_user_groups.execute()
+
+    intro_tables = IntroTables(db_conn, db_catalog, folders)
+    intro_tables.execute()
+
+
+@init_redscope_env
+def init_rd(db_conn):
+    return db_conn
