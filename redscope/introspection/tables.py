@@ -58,7 +58,7 @@ class IntroTables:
         self.tables.loc[self.tables['has_default'] == True, 'dflt_sql'] = "DEFAULT"
 
     def _make_constraint_sql(self):
-        self.const['const_sql'] = "CONSTRAINT " + self.const['con_name'] + " " + self.const['con_def']
+        self.const['const_sql'] = ",\nCONSTRAINT " + self.const['con_name'] + " " + self.const['con_def']
 
     def _nan_to_mt_string(self):
         self.tables = self.tables.fillna('')
