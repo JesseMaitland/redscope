@@ -3,7 +3,7 @@ import os
 from setuptools import setup, find_packages
 from setuptools.command.install import install
 
-VERSION = '0.1.7'
+VERSION = '0.1.8'
 
 
 class VerifyVersionCommand(install):
