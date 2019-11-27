@@ -5,6 +5,7 @@ commands:
     - migrate
     - new
     - show
+    - intro
     help: Actions which can be performed
   object:
     choices:

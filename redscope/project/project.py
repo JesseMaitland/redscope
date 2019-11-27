@@ -14,6 +14,11 @@ class Folders:
         self.log_path = self.root / "logs"
         self.migrations_path = self.root / "migrations"
         self.ddl_path = self.root / "ddl"
+        self.schema_path = self.ddl_path / "schema"
+        self.permissions_path = self.ddl_path / "permissions"
+        self.users_path = self.permissions_path / "users"
+        self.groups_path = self.permissions_path / "groups"
+        self.grants_path = self.permissions_path / "grants"
 
         # file paths
         self.log_file = self.log_path / "redscope.log"

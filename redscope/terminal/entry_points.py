@@ -1,6 +1,12 @@
 from .terminal import init_redscope_env, get_terminal_logger
 from redscope.database import Migration, DDL, InitiateDb
+from redscope.database.models import Catalog
 from redscope.project import project, logger_factory
+from redscope.introspection.schema import IntroSchema
+from redscope.introspection.users import IntroUsers
+from redscope.introspection.groups import IntroGroups
+from redscope.introspection.user_groups import IntroUserGroup
+from redscope.introspection.tables import IntroTables
 from redscope import rambo_path
 from rambo import provide_cmd_args
 
@@ -22,10 +28,11 @@ def init_project():
     folders = project.Folders()
     logger.info("creating redscope project directories")
 
-    folders.root.mkdir(exist_ok=True, parents=True)
-    folders.log_path.mkdir(exist_ok=True, parents=True)
-    folders.migrations_path.mkdir(exist_ok=True, parents=True)
-    folders.ddl_path.mkdir(exist_ok=True, parents=True)
+    for k, v in folders.__dict__.items():
+        if not v.suffix:
+            v.mkdir(exist_ok=True, parents=True)
+        else:
+            v.touch(exist_ok=True)
 
     logger.info("project directories created successfully")
     exit()
@@ -101,3 +108,27 @@ def show_migrations(db_conn):
         logger.info("No migrations to apply, database is up to date")
         exit()
 
+
+@init_redscope_env
+def intro_db(db_conn):
+    folders = project.Folders()
+    db_catalog = Catalog()
+    intro_schema = IntroSchema(db_conn, db_catalog, folders)
+    intro_schema.execute()
+
+    intro_users = IntroUsers(db_conn, db_catalog, folders)
+    intro_users.execute()
+
+    intro_groups = IntroGroups(db_conn, db_catalog, folders)
+    intro_groups.execute()
+
+    intro_user_groups = IntroUserGroup(db_conn, db_catalog, folders)
+    intro_user_groups.execute()
+
+    intro_tables = IntroTables(db_conn, db_catalog, folders)
+    intro_tables.execute()
+
+
+@init_redscope_env
+def init_rd(db_conn):
+    return db_conn
