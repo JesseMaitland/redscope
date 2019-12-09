@@ -6,9 +6,9 @@ from typing import List, Tuple
 
 class Folders:
 
-    def __init__(self):
+    def __init__(self, root_name: str):
         # root directory path
-        self.root = Path.cwd() / "database"
+        self.root = Path.cwd() / root_name
 
         # project folders
         self.log_path = self.root / "logs"

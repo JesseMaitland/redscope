@@ -6,7 +6,7 @@ from rambo import provide_cmd_args
 
 
 def get_terminal_logger(name: str) -> Logger:
-    folders = project.Folders()
+    folders = project.Folders("database")
     folders.log_path.mkdir(exist_ok=True, parents=True)
     folders.log_file.touch(exist_ok=True)
 

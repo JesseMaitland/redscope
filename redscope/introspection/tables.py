@@ -1,95 +1,93 @@
 from redscope.project.project import Folders
 from redscope.database.models import Catalog
+from redscope.introspection import DbIntro
+from typing import Tuple
 import pandas as pd
 
 
-class IntroTables:
+class IntrospectTables(DbIntro):
 
     def __init__(self, db_connection, catalog: Catalog, folders: Folders):
-        self.db_connection = db_connection
-        self.tables = pd.DataFrame()
-        self.const = pd.DataFrame()
-        self.table_const = pd.DataFrame()
-        self.catalog = catalog
-        self.folders = folders
+        super().__init__(db_connection, catalog, folders, "schema_path", "table_name")
 
-    def execute(self):
-        self.fetch_data()
-        self._make_constraint_sql()
+    def fetch_data(self) -> Tuple[pd.DataFrame]:
+        tables = self.catalog.fetch_tables(self.db_connection)
+        constraints = self.catalog.fetch_constraints(self.db_connection)
+        return tables, constraints
 
-        self._format_sql()
-        self._set_new_columns()
-        self._set_default_and_null()
-        self._nan_to_mt_string()
-        self._make_column_sql()
-        self._remove_whitespace()
-        self._group_by_table()
-        self._merge_tables_and_constraints()
-        self._nan_to_mt_string()
-        self._set_create_table()
-        self._set_paths()
-        self._make_dirs()
-        self._make_files()
+    def construct_sql(self, *data_frames: Tuple[pd.DataFrame]) -> pd.DataFrame:
+        tables = data_frames[0]
+        tables = self.format_table_dtypes(tables)
+        tables = self.set_new_columns(tables)
+        tables = self.set_default_and_null(tables)
+        tables = tables.fillna('')
+        tables = self.make_column_sql(tables)
+        tables['col_sql'] = tables['col_sql'].str.strip()
+        tables = self.group_by_table(tables)
 
-    def fetch_data(self):
-        self.tables = self.catalog.fetch_tables(self.db_connection)
-        self.const = self.catalog.fetch_constraints(self.db_connection)
+        constraints = data_frames[1]
+        constraints = self.make_constraint_sql(constraints)
+        constraints = constraints.fillna('')
+        constraints['constraint_sql'] = constraints['constraint_sql'].str.strip()
 
-    def _merge_tables_and_constraints(self):
-        self.table_const = self.tables.merge(self.const, how='left')
+        tables = self.merge_tables_and_constraints(constraints, tables)
+        tables = self.set_create_table(tables)
+        return tables
 
-    def _format_sql(self):
-        self.tables['data_type'] = self.tables['data_type'].str.replace('character varying', 'VARCHAR')
-        self.tables['data_type'] = self.tables['data_type'].str.replace('character', 'CHAR')
-        self.tables['data_type'] = self.tables['data_type'].str.replace('integer', 'INT')
-        # self.table_const['data_type'] = self.table_const['data_type'].str.replace('timestamp without time zone',
-        #                                                                           'TIMESTAMP')
-        # self.table_const['data_type'] = self.table_const['data_type'].str.replace('timestamp with time zone',
-        #                                                                           'TIMESTAMPZ')
-        self.tables['data_type'] = self.tables['data_type'].str.upper()
+    @staticmethod
+    def merge_tables_and_constraints(tables: pd.DataFrame, constraints: pd.DataFrame):
+        return tables.merge(constraints, how='left')
 
-    def _set_new_columns(self):
-        self.tables['sql_null'] = pd.np.nan
-        self.tables['dflt_sql'] = pd.np.nan
-        self.tables['col_sql'] = pd.np.nan
+    @staticmethod
+    def make_constraint_sql(constraints: pd.DataFrame) -> pd.DataFrame:
+        constraints['constraint_sql'] = ",\nCONSTRAINT " + constraints['con_name'] + " " + constraints['con_def']
+        return constraints
 
-    def _set_default_and_null(self):
-        self.tables.loc[self.tables['not_null'] == True, 'sql_null'] = "NOT NULL"
-        self.tables.loc[self.tables['has_default'] == True, 'dflt_sql'] = "DEFAULT"
+    @staticmethod
+    def format_table_dtypes(tables: pd.DataFrame) -> pd.DataFrame:
+        tables['data_type'] = tables['data_type'].str.replace('character varying', 'VARCHAR')
+        tables['data_type'] = tables['data_type'].str.replace('character', 'CHAR')
+        tables['data_type'] = tables['data_type'].str.replace('integer', 'INT')
+        tables['data_type'] = tables['data_type'].str.upper()
+        return tables
 
-    def _make_constraint_sql(self):
-        self.const['const_sql'] = ",\nCONSTRAINT " + self.const['con_name'] + " " + self.const['con_def']
+    @staticmethod
+    def set_new_columns(tables: pd.DataFrame) -> pd.DataFrame:
+        tables['sql_null'] = pd.np.nan
+        tables['dflt_sql'] = pd.np.nan
+        tables['col_sql'] = pd.np.nan
+        tables['sql_string'] = pd.np.nan
+        return tables
 
-    def _nan_to_mt_string(self):
-        self.tables = self.tables.fillna('')
-        self.table_const = self.table_const.fillna('')
+    @staticmethod
+    def set_default_and_null(tables: pd.DataFrame) -> pd.DataFrame:
+        tables.loc[tables['not_null'] == True, 'sql_null'] = "NOT NULL"
+        tables.loc[tables['has_default'] == True, 'dflt_sql'] = "DEFAULT"
+        return tables
 
-    def _remove_whitespace(self):
-        self.tables['col_sql'] = self.tables['col_sql'].str.strip()
-        self.const['const_sql'] = self.const['const_sql'].str.strip()
+    @staticmethod
+    def make_column_sql(tables: pd.DataFrame) -> pd.DataFrame:
+        tables['col_sql'] = tables['column_name'] + ' ' + tables['data_type'] + ' ' + \
+                            tables['sql_null'] + ' ' + \
+                            tables['dflt_sql'] + ' ' + tables['default_value']
+        return tables
 
-    def _make_column_sql(self):
-        self.tables['col_sql'] = self.tables['column_name'] + ' ' + self.tables['data_type'] + ' ' + \
-                                 self.tables['sql_null'] + ' ' + \
-                                 self.tables['dflt_sql'] + ' ' + self.tables['default_value']
+    @staticmethod
+    def group_by_table(tables: pd.DataFrame) -> pd.DataFrame:
+        tables = tables.groupby(['schema_name', 'table_name'])['col_sql'].apply(',\n'.join).reset_index()
+        return tables
 
-    def _group_by_table(self):
-        print(self.tables.info())
-        self.tables = self.tables.groupby(['schema_name', 'table_name'])['col_sql'].apply(
-            ',\n'.join).reset_index()
-
-    def _set_create_table(self):
-        self.table_const['create_table'] = self.table_const.apply(
-            lambda x: f"CREATE TABLE {x['schema_name']}.{x['table_name']}\n(\n{x['col_sql']} {x['const_sql']}\n);", axis=1)
-
-    def _set_paths(self):
-        self.table_const['paths'] = self.table_const['schema_name'].apply(
-            lambda x: self.folders.schema_path / x / "tables")
-
-    def _make_dirs(self):
-        self.table_const['paths'].apply(lambda x: x.mkdir(exist_ok=True, parents=True))
-
-    def _make_files(self):
-        self.table_const.apply(
-            lambda x: x['paths'].joinpath(f"{x['schema_name']}.{x['table_name']}.sql").write_text(x['create_table']),
+    @staticmethod
+    def set_create_table(tables: pd.DataFrame) -> pd.DataFrame:
+        tables['sql_string'] = tables.apply(
+            lambda x: f"CREATE TABLE {x['schema_name']}.{x['table_name']}\n(\n{x['col_sql']} {x['constraint_sql']}\n);",
             axis=1)
+        return tables
+
+    def make_paths(self, tables: pd.DataFrame) -> pd.DataFrame:
+        tables['paths'] = tables['schema_name'].apply(lambda x: self.root_path / x / "tables")
+        return tables
+
+    def save_files(self, tables: pd.DataFrame) -> pd.DataFrame:
+        tables.apply(lambda x: x['paths'].joinpath(f"{x['table_name']}.sql").write_text(x['sql_string']), axis=1)
+        return tables

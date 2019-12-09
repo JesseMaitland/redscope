@@ -2,15 +2,17 @@ from .terminal import init_redscope_env, get_terminal_logger
 from redscope.database import Migration, DDL, InitiateDb
 from redscope.database.models import Catalog
 from redscope.project import project, logger_factory
-from redscope.introspection.schema import IntroSchema
-from redscope.introspection.users import IntroUsers
-from redscope.introspection.groups import IntroGroups
+from redscope.introspection.schema import IntrospectSchema
+from redscope.introspection.users import IntrospectUsers
+from redscope.introspection.groups import IntrospectGroups
 from redscope.introspection.user_groups import IntroUserGroup
-from redscope.introspection.tables import IntroTables
+from redscope.introspection.tables import IntrospectTables
 from redscope import rambo_path
 from rambo import provide_cmd_args
 
 logger = get_terminal_logger(__name__)
+FILE_ROOT = "database"
+TMP_ROOT = "tmp"
 
 
 @init_redscope_env
@@ -25,7 +27,7 @@ def init_db(db_conn):
 
 
 def init_project():
-    folders = project.Folders()
+    folders = project.Folders(FILE_ROOT)
     logger.info("creating redscope project directories")
 
     for k, v in folders.__dict__.items():
@@ -44,7 +46,7 @@ def new_migration(cmd_args):
         logger.info("the --name parameter must be provided when creating new migration")
         exit()
 
-    folders = project.Folders()
+    folders = project.Folders(FILE_ROOT)
     file_name = project.create_file_name(cmd_args.name)
 
     logger.info(f"Creating migration {file_name}")
@@ -65,7 +67,7 @@ def new_migration(cmd_args):
 
 @init_redscope_env
 def migrate_up(db_conn):
-    folders = project.Folders()
+    folders = project.Folders(FILE_ROOT)
     local_migrations = project.all_local_migrations(folders)
     db_migrations = Migration.select_all(db_conn)
     migrations_to_apply = project.all_outstanding_migrations(local_migrations, db_migrations)
@@ -94,7 +96,7 @@ def migrate_down(db_conn):
 
 @init_redscope_env
 def show_migrations(db_conn):
-    folders = project.Folders()
+    folders = project.Folders(FILE_ROOT)
     local_migrations = project.all_local_migrations(folders)
     db_migrations = Migration.select_all(db_conn)
     migrations_to_apply = project.all_outstanding_migrations(local_migrations, db_migrations)
@@ -111,22 +113,72 @@ def show_migrations(db_conn):
 
 @init_redscope_env
 def intro_db(db_conn):
-    folders = project.Folders()
-    db_catalog = Catalog()
-    intro_schema = IntroSchema(db_conn, db_catalog, folders)
-    intro_schema.execute()
+    folders = project.Folders(FILE_ROOT)
+    catalog = Catalog()
 
-    intro_users = IntroUsers(db_conn, db_catalog, folders)
-    intro_users.execute()
+    intro_users = IntrospectUsers(db_conn, catalog, folders)
+    intro_users.introspect_and_save_files()
 
-    intro_groups = IntroGroups(db_conn, db_catalog, folders)
-    intro_groups.execute()
+    intro_schema = IntrospectSchema(db_conn, catalog, folders)
+    intro_schema.introspect_and_save_files()
 
-    intro_user_groups = IntroUserGroup(db_conn, db_catalog, folders)
+    intro_tables = IntrospectTables(db_conn, catalog, folders)
+    intro_tables.introspect_and_save_files()
+
+    intro_groups = IntrospectGroups(db_conn, catalog, folders)
+    intro_groups.introspect_and_save_files()
+
+    intro_user_groups = IntroUserGroup(db_conn, catalog, folders)
     intro_user_groups.execute()
 
-    intro_tables = IntroTables(db_conn, db_catalog, folders)
-    intro_tables.execute()
+    tmp_folders = project.Folders(TMP_ROOT)
+
+    intro_users = IntrospectUsers(db_conn, catalog, tmp_folders)
+    intro_users.introspect_and_save_files()
+
+    intro_schema = IntrospectSchema(db_conn, catalog, tmp_folders)
+    intro_schema.introspect_and_save_files()
+
+    intro_tables = IntrospectTables(db_conn, catalog, tmp_folders)
+    intro_tables.introspect_and_save_files()
+
+    intro_groups = IntrospectGroups(db_conn, catalog, tmp_folders)
+    intro_groups.introspect_and_save_files()
+
+    intro_user_groups = IntroUserGroup(db_conn, catalog, tmp_folders)
+    intro_user_groups.execute()
+
+# intro_schema = IntroSchema(db_conn, db_catalog, folders)
+    # intro_schema.execute()
+#
+    # intro_users = IntroUsers(db_conn, db_catalog, folders)
+    # intro_users.execute()
+#
+    # intro_groups = IntroGroups(db_conn, db_catalog, folders)
+    # intro_groups.execute()
+#
+    intro_user_groups = IntroUserGroup(db_conn, catalog, folders)
+    intro_user_groups.execute()
+#
+    # intro_tables = IntroTables(db_conn, db_catalog, folders)
+    # intro_tables.execute()
+
+
+def compare_dirs():
+    import os
+    from filecmp import dircmp, cmp
+    folders = project.Folders(FILE_ROOT)
+    tmp_folders = project.Folders(TMP_ROOT)
+
+    comps = []
+    for d in os.listdir(folders.schema_path):
+        tmp_path = tmp_folders.schema_path / d
+        perm_path = folders.schema_path / d
+        diff = dircmp(perm_path, tmp_path)
+        comps.append(diff)
+    return comps
+
+
 
 
 @init_redscope_env

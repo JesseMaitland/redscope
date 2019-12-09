@@ -1,5 +1,6 @@
 from redscope.project.project import Folders
 from redscope.database.models import Catalog
+from redscope.introspection import DbIntro
 import pandas as pd
 
 
