@@ -16,4 +16,5 @@ SELECT ns.nspname AS schema_name,
              AND ad.adnum = a.attnum
  WHERE schema_name NOT IN ('pg_catalog', 'pg_toast', 'information_schema')
        AND c.relkind = 'r'
-       AND a.attnum >= 0;
+       AND a.attnum >= 0
+ORDER BY a.attnum ASC;
