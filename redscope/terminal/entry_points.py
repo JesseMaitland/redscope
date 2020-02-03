@@ -1,5 +1,5 @@
 from .terminal import init_redscope_env, get_terminal_logger
-from redscope.database import Migration, DDL, InitiateDb
+from redscope.database import Migration, MigrationDDL, InitiateDb
 from redscope.database.models import Catalog
 from redscope.project import project, logger_factory
 from redscope.introspection.schema import IntrospectSchema
@@ -18,7 +18,7 @@ TMP_ROOT = "tmp"
 @init_redscope_env
 def init_db(db_conn):
     logger.info("creating database table and schema")
-    ddl = DDL()
+    ddl = MigrationDDL()
     initiate_db = InitiateDb(ddl, db_conn)
     initiate_db.exe_create_schema()
     initiate_db.exe_create_migration_table()

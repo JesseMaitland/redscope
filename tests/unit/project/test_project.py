@@ -11,7 +11,7 @@ LOGGING_PATH = ROOT_PATH / "logs"
 class TestMigrationDirs(TestCase):
 
     def setUp(self) -> None:
-        self.project_folders = project.Folders()
+        self.project_folders = project.Folders('database')
 
     def test_root_path(self):
         self.assertEqual(ROOT_PATH, self.project_folders.root)

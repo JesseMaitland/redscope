@@ -5,6 +5,46 @@ from typing import Tuple
 import pandas as pd
 
 
+class Table:
+
+    def __init__(self, schema: str, table: str, ddl: str):
+        self.schema = schema
+        self.table = table
+        self.ddl = ddl
+
+
+
+class TableCatalog:
+
+    def __init__(self, **kwargs):
+        for key, value in kwargs.items():
+            super().__setattr__(key, value)
+
+    def __setitem__(self, key, value):
+        self.__dict__[key] = value
+
+    def __getitem__(self, item):
+        return self.__dict__[item]
+
+    def __getattr__(self, item):
+        if item in self.__dict__.keys():
+            return self.__dict__[item]
+        else:
+            raise AttributeError(f"{self.__class__.__name__} does not have attribute {item}")
+
+    def __setattr__(self, key, value):
+        if key in self.__dict__.keys():
+            self.__dict__[key] = value
+        else:
+            super().__setattr__(key, value)
+
+    @classmethod
+    def make_catalog(cls, ddl: pd.DataFrame) -> 'TableCatalog':
+        Table(schema=ddl['schema_name'], table=ddl['table_name'], ddl=ddl['sql_string'])
+
+
+
+# TODO: The column order is not always the same. Needs to be fixed.
 class IntrospectTables(DbIntro):
 
     def __init__(self, db_connection, catalog: Catalog, folders: Folders):

@@ -31,7 +31,7 @@ MIGRATION_SELECT_LAST = """SELECT key, name, path FROM redscope.migrations ORDER
 class TestDDL(TestCase):
 
     def setUp(self) -> None:
-        self.ddl = models.DDL()
+        self.ddl = models.MigrationDDL()
 
     def test_create_schema(self):
         self.assertEqual(CREATE_SCHEMA, self.ddl.create_schema)
@@ -91,7 +91,7 @@ class TestInitiateDb(TestCase):
         self.mock_cursor = MagicMock()
         self.mock_db_conn = MagicMock()
         self.mock_db_conn.cursor.return_value = self.mock_cursor
-        self.initiate_db = models.InitiateDb(models.DDL(), self.mock_db_conn)
+        self.initiate_db = models.InitiateDb(models.MigrationDDL(), self.mock_db_conn)
 
     def test_exec_create_schema(self):
         self.initiate_db.exe_create_schema()

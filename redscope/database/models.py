@@ -1,8 +1,10 @@
 from pathlib import Path
+from typing import List
+
 import pandas as pd
 
 
-class DDL:
+class MigrationDDL:
 
     def __init__(self):
         self.root: Path = Path(__file__).absolute().parent / "queries" / "ddl"
@@ -67,9 +69,10 @@ class Catalog:
         return get_data
 
 
+# TODO: duplication going on here, refactor and DRY it out.
 class InitiateDb:
 
-    def __init__(self, ddl: DDL, db_connection):
+    def __init__(self, ddl: MigrationDDL, db_connection):
         self.ddl = ddl
         self.db_connection = db_connection
 
@@ -173,3 +176,11 @@ class Migration:
         except Exception:
             db_connection.rollback()
             raise
+
+
+class DDL:
+
+    def __init__(self, schema: str, db_object: str, ddl: str):
+        self.schema = schema
+        self.db_object = db_object
+        self.ddl = ddl

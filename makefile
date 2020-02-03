@@ -46,3 +46,10 @@ qa:
 build:
 	. venv/bin/activate \
 	&& python setup.py sdist bdist_wheel
+
+deploy:
+  ifdef version
+		./bin/release --version $(version)
+  else
+	  ./bin/release
+  endif
