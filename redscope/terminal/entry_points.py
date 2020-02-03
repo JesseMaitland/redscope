@@ -116,20 +116,20 @@ def intro_db(db_conn):
     folders = project.Folders(FILE_ROOT)
     catalog = Catalog()
 
-    #intro_users = IntrospectUsers(db_conn, catalog, folders)
-    #intro_users.introspect_and_save_files()
+    intro_users = IntrospectUsers(db_conn, catalog, folders)
+    intro_users.introspect_and_save_files()
 
-    # intro_schema = IntrospectSchema(db_conn, catalog, folders)
-    # intro_schema.introspect_and_save_files()
+    intro_schema = IntrospectSchema(db_conn, catalog, folders)
+    intro_schema.introspect_and_save_files()
 
     intro_tables = IntrospectTables(db_conn, catalog, folders)
     intro_tables.introspect_and_save_files()
 
-    #intro_groups = IntrospectGroups(db_conn, catalog, folders)
-    #intro_groups.introspect_and_save_files()
+    intro_groups = IntrospectGroups(db_conn, catalog, folders)
+    intro_groups.introspect_and_save_files()
 
-    #intro_user_groups = IntroUserGroup(db_conn, catalog, folders)
-    #intro_user_groups.execute()
+    intro_user_groups = IntroUserGroup(db_conn, catalog, folders)
+    intro_user_groups.execute()
 
 
 def compare_dirs():
