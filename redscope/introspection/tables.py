@@ -76,7 +76,9 @@ class IntrospectTables(DbIntro):
 
     @staticmethod
     def merge_tables_and_constraints(tables: pd.DataFrame, constraints: pd.DataFrame):
-        return tables.merge(constraints, how='left')
+        df = pd.merge(constraints, tables, how='left')
+        df['constraint_sql'] = df['constraint_sql'].fillna('')
+        return df
 
     @staticmethod
     def make_constraint_sql(constraints: pd.DataFrame) -> pd.DataFrame:

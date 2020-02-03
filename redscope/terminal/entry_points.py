@@ -116,52 +116,20 @@ def intro_db(db_conn):
     folders = project.Folders(FILE_ROOT)
     catalog = Catalog()
 
-    intro_users = IntrospectUsers(db_conn, catalog, folders)
-    intro_users.introspect_and_save_files()
+    #intro_users = IntrospectUsers(db_conn, catalog, folders)
+    #intro_users.introspect_and_save_files()
 
-    intro_schema = IntrospectSchema(db_conn, catalog, folders)
-    intro_schema.introspect_and_save_files()
+    # intro_schema = IntrospectSchema(db_conn, catalog, folders)
+    # intro_schema.introspect_and_save_files()
 
     intro_tables = IntrospectTables(db_conn, catalog, folders)
     intro_tables.introspect_and_save_files()
 
-    intro_groups = IntrospectGroups(db_conn, catalog, folders)
-    intro_groups.introspect_and_save_files()
+    #intro_groups = IntrospectGroups(db_conn, catalog, folders)
+    #intro_groups.introspect_and_save_files()
 
-    intro_user_groups = IntroUserGroup(db_conn, catalog, folders)
-    intro_user_groups.execute()
-
-    tmp_folders = project.Folders(TMP_ROOT)
-
-    intro_users = IntrospectUsers(db_conn, catalog, tmp_folders)
-    intro_users.introspect_and_save_files()
-
-    intro_schema = IntrospectSchema(db_conn, catalog, tmp_folders)
-    intro_schema.introspect_and_save_files()
-
-    intro_tables = IntrospectTables(db_conn, catalog, tmp_folders)
-    intro_tables.introspect_and_save_files()
-
-    intro_groups = IntrospectGroups(db_conn, catalog, tmp_folders)
-    intro_groups.introspect_and_save_files()
-
-    intro_user_groups = IntroUserGroup(db_conn, catalog, tmp_folders)
-    intro_user_groups.execute()
-
-# intro_schema = IntroSchema(db_conn, db_catalog, folders)
-    # intro_schema.execute()
-#
-    # intro_users = IntroUsers(db_conn, db_catalog, folders)
-    # intro_users.execute()
-#
-    # intro_groups = IntroGroups(db_conn, db_catalog, folders)
-    # intro_groups.execute()
-#
-    intro_user_groups = IntroUserGroup(db_conn, catalog, folders)
-    intro_user_groups.execute()
-#
-    # intro_tables = IntroTables(db_conn, db_catalog, folders)
-    # intro_tables.execute()
+    #intro_user_groups = IntroUserGroup(db_conn, catalog, folders)
+    #intro_user_groups.execute()
 
 
 def compare_dirs():
