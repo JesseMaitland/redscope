@@ -1,7 +1,7 @@
 from .terminal import init_redscope_env, get_terminal_logger
 from redscope.database import Migration, MigrationDDL, InitiateDb
 from redscope.database.models import Catalog
-from redscope.project import project, logger_factory
+from redscope.project import project
 from redscope.introspection.schema import IntrospectSchema
 from redscope.introspection.users import IntrospectUsers
 from redscope.introspection.groups import IntrospectGroups
