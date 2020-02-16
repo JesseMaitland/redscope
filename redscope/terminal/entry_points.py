@@ -1,21 +1,15 @@
-from .terminal import init_redscope_env, get_terminal_logger
+from .terminal import init_terminal_env, get_terminal_logger
+from redscope.config import RAMBO_CONFIG_PATH, FILE_ROOT
 from redscope.database import Migration, MigrationDDL, InitiateDb
 from redscope.database.models import Catalog
-from redscope.project import project
-from redscope.introspection.schema import IntrospectSchema
-from redscope.introspection.users import IntrospectUsers
-from redscope.introspection.groups import IntrospectGroups
-from redscope.introspection.user_groups import IntroUserGroup
-from redscope.introspection.tables import IntrospectTables
-from redscope import rambo_path
+from redscope.project import Folders, create_file_name, all_outstanding_migrations, all_local_migrations
+from redscope.introspection import IntrospectUsers, IntroUserGroup, IntrospectGroups, IntrospectSchema, IntrospectTables
 from rambo import provide_cmd_args
 
 logger = get_terminal_logger(__name__)
-FILE_ROOT = "database"
-TMP_ROOT = "tmp"
 
 
-@init_redscope_env
+@init_terminal_env
 def init_db(db_conn):
     logger.info("creating database table and schema")
     ddl = MigrationDDL()
@@ -27,7 +21,7 @@ def init_db(db_conn):
 
 
 def init_project():
-    folders = project.Folders(FILE_ROOT)
+    folders = Folders(FILE_ROOT)
     logger.info("creating redscope project directories")
 
     for k, v in folders.__dict__.items():
@@ -40,14 +34,14 @@ def init_project():
     exit()
 
 
-@provide_cmd_args(rambo_path)
+@provide_cmd_args(RAMBO_CONFIG_PATH)
 def new_migration(cmd_args):
     if not cmd_args.name:
         logger.info("the --name parameter must be provided when creating new migration")
         exit()
 
-    folders = project.Folders(FILE_ROOT)
-    file_name = project.create_file_name(cmd_args.name)
+    folders = Folders(FILE_ROOT)
+    file_name = create_file_name(cmd_args.name)
 
     logger.info(f"Creating migration {file_name}")
 
@@ -65,12 +59,12 @@ def new_migration(cmd_args):
     exit()
 
 
-@init_redscope_env
+@init_terminal_env
 def migrate_up(db_conn):
-    folders = project.Folders(FILE_ROOT)
-    local_migrations = project.all_local_migrations(folders)
+    folders = Folders(FILE_ROOT)
+    local_migrations = all_local_migrations(folders)
     db_migrations = Migration.select_all(db_conn)
-    migrations_to_apply = project.all_outstanding_migrations(local_migrations, db_migrations)
+    migrations_to_apply = all_outstanding_migrations(local_migrations, db_migrations)
 
     if migrations_to_apply:
 
@@ -85,7 +79,7 @@ def migrate_up(db_conn):
     exit()
 
 
-@init_redscope_env
+@init_terminal_env
 def migrate_down(db_conn):
     last_applied_migration = Migration.select_last(db_conn)
     logger.info(f"migrating down from {last_applied_migration.path.as_posix()}")
@@ -94,12 +88,12 @@ def migrate_down(db_conn):
     logger.info(f"migration down from {last_applied_migration.path.as_posix()} success!")
 
 
-@init_redscope_env
+@init_terminal_env
 def show_migrations(db_conn):
-    folders = project.Folders(FILE_ROOT)
-    local_migrations = project.all_local_migrations(folders)
+    folders = Folders(FILE_ROOT)
+    local_migrations = all_local_migrations(folders)
     db_migrations = Migration.select_all(db_conn)
-    migrations_to_apply = project.all_outstanding_migrations(local_migrations, db_migrations)
+    migrations_to_apply = all_outstanding_migrations(local_migrations, db_migrations)
 
     if migrations_to_apply:
         logger.info(f'the following migrations would be applied with "redscope migrate up"')
@@ -111,9 +105,9 @@ def show_migrations(db_conn):
         exit()
 
 
-@init_redscope_env
+@init_terminal_env
 def intro_db(db_conn):
-    folders = project.Folders(FILE_ROOT)
+    folders = Folders(FILE_ROOT)
     catalog = Catalog()
 
     intro_users = IntrospectUsers(db_conn, catalog, folders)
@@ -130,25 +124,3 @@ def intro_db(db_conn):
 
     intro_user_groups = IntroUserGroup(db_conn, catalog, folders)
     intro_user_groups.execute()
-
-
-def compare_dirs():
-    import os
-    from filecmp import dircmp, cmp
-    folders = project.Folders(FILE_ROOT)
-    tmp_folders = project.Folders(TMP_ROOT)
-
-    comps = []
-    for d in os.listdir(folders.schema_path):
-        tmp_path = tmp_folders.schema_path / d
-        perm_path = folders.schema_path / d
-        diff = dircmp(perm_path, tmp_path)
-        comps.append(diff)
-    return comps
-
-
-
-
-@init_redscope_env
-def init_rd(db_conn):
-    return db_conn

@@ -1,9 +1,9 @@
 from redscope.project.project import Folders
 from redscope.database.models import Catalog
-from redscope.introspection import DbIntro
 import pandas as pd
 
 
+# TODO: refactor to inherit from DBIntro
 class IntroUserGroup:
 
     def __init__(self, db_connection, catalog: Catalog, folders: Folders):

@@ -1,6 +1,4 @@
 from pathlib import Path
-from typing import List
-
 import pandas as pd
 
 
@@ -53,7 +51,6 @@ class Catalog:
         query_paths = self.root_path.glob('**/*.sql')
         # set the query attributes
         for path in query_paths:
-            print(path)
             name = path.name.split('.')[0]
             query_name = f"{name}_query"
             query_value = path.read_text()
@@ -66,6 +63,7 @@ class Catalog:
     def _method_maker(self, query):
         def get_data(db_connection) -> pd.DataFrame:
             return pd.read_sql(query, db_connection, parse_dates=True)
+
         return get_data
 
 

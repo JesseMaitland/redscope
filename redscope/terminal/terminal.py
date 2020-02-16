@@ -1,42 +1,32 @@
 from logging import Logger
-from redscope.database import models, db_connections
-from redscope.project import project, logger_factory
-from redscope import env, rambo_path
+from redscope.config import RAMBO_CONFIG_PATH
+from redscope.database import db_connections
+from redscope.project import Folders, logger_factory
+from redscope import env
 from rambo import provide_cmd_args
 
 
-def get_terminal_logger(name: str) -> Logger:
-    folders = project.Folders("database")
+def get_terminal_logger(name: str, print_stream: bool = True) -> Logger:
+    folders = Folders("database")
     folders.log_path.mkdir(exist_ok=True, parents=True)
     folders.log_file.touch(exist_ok=True)
+    return logger_factory(folders.log_file, name, print_stream=print_stream)
 
-    return logger_factory(folders.log_file, name)
 
-
-@provide_cmd_args(rambo_path)
+@provide_cmd_args(RAMBO_CONFIG_PATH)
 def _init_env(cmd_args):
-    if env.load_custom_env(cmd_args.env_file):
-        return True
-    elif env.load_default_env():
-        return True
-    else:
-        return False
+    env.load_redscope_env(cmd_args.env_file)
+    return db_connections.get_db_connection(cmd_args.env_var)
 
 
-@provide_cmd_args(rambo_path)
-def _db_connection(cmd_args):
-    if cmd_args.env_var:
-        return db_connections.custom(cmd_args.env_var)
-    else:
-        return db_connections.default()
-
-
-def init_redscope_env(func):
+def init_terminal_env(func):
     def wrapper(*args, **kwargs):
-        if _init_env():
-            db_conn = _db_connection()
+        try:
+            db_conn = _init_env()
             return func(db_conn=db_conn, *args, **kwargs)
-        else:
-            print(f"unable to init redscope environment. Please provide a .env file in the cwd, or name of a custom file")
+        except Exception:
+            logger = get_terminal_logger(__name__, print_stream=False)
+            logger.exception("redscope exception")
+            print(f"an exception occurred while running redscope. Check log in /database/redscope.log")
             exit()
     return wrapper

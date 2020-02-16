@@ -2,7 +2,7 @@ from typing import Tuple
 
 from redscope.project.project import Folders
 from redscope.database.models import Catalog
-from redscope.introspection import DbIntro
+from redscope.introspection.dbintro import DbIntro
 import pandas as pd
 
 

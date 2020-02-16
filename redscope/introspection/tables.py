@@ -1,47 +1,112 @@
+# flake8: noqa
+from itertools import groupby
 from redscope.project.project import Folders
 from redscope.database.models import Catalog
-from redscope.introspection import DbIntro
-from typing import Tuple
+from redscope.introspection.dbintro import DbIntro
+from typing import Tuple, List
 import pandas as pd
 
 
 class Table:
 
-    def __init__(self, schema: str, table: str, ddl: str):
+    def __init__(self, schema: str, name: str, ddl: str):
         self.schema = schema
-        self.table = table
+        self.name = name
         self.ddl = ddl
 
+    @property
+    def full_name(self) -> str:
+        return f"{self.schema}.{self.name}"
+
+    @property
+    def short_file_name(self) -> str:
+        return f"{self.name}.sql"
+
+    @property
+    def long_file_name(self) -> str:
+        return f"{self.full_name}.sql"
+
+    @property
+    def simple_ddl(self) -> str:
+        lines_to_keep = []
+        ddl_lines = self.ddl.split('\n')
+
+        for line in ddl_lines:
+            to_keep = line
+            if 'CONSTRAINT' in line:
+                continue
+
+            elif 'DEFAULT' in line:
+                to_keep = line.split('DEFAULT')[0].rstrip() + ','
+                lines_to_keep.append(to_keep)
+
+            elif 'NOT NULL' in line:
+                to_keep = line.split('NOT NULL')[0].rstrip() + ','
+                lines_to_keep.append(to_keep)
+
+            else:
+                lines_to_keep.append(to_keep)
+
+        lines_to_keep[-2] = lines_to_keep[-2].rstrip(',')
+
+        return '\n'.join(lines_to_keep)
+
+    @property
+    def drop_table(self) -> str:
+        return f"DROP TABLE IF EXISTS {self.full_name};"
+
+    @property
+    def simple_ddl_drop(self) -> str:
+        drop = self.drop_table + "\n"
+        drop = drop + self.simple_ddl
+        return drop
+
+    @property
+    def ddl_not_exist(self) -> str:
+        ddl = self.simple_ddl
+        ddl = ddl.replace('CREATE TABLE', 'CREATE TABLE IF NOT EXISTS')
+        return ddl
+
+    def get_external_table(self, schema: str) -> str:
+        ddl = self.simple_ddl
+        ddl = ddl.replace('CREATE TABLE', 'CREATE EXTERNAL TABLE')
+        ddl = ddl.replace(f"{self.schema}.", f"{schema}.")
+        return ddl
 
 
-class TableCatalog:
+class Schema:
 
-    def __init__(self, **kwargs):
-        for key, value in kwargs.items():
-            super().__setattr__(key, value)
-
-    def __setitem__(self, key, value):
-        self.__dict__[key] = value
-
-    def __getitem__(self, item):
-        return self.__dict__[item]
-
-    def __getattr__(self, item):
-        if item in self.__dict__.keys():
-            return self.__dict__[item]
-        else:
-            raise AttributeError(f"{self.__class__.__name__} does not have attribute {item}")
-
-    def __setattr__(self, key, value):
-        if key in self.__dict__.keys():
-            self.__dict__[key] = value
-        else:
-            super().__setattr__(key, value)
+    def __init__(self, name: str, tables: List[Table]):
+        self.name = name
+        self.tables = tables
 
     @classmethod
-    def make_catalog(cls, ddl: pd.DataFrame) -> 'TableCatalog':
-        Table(schema=ddl['schema_name'], table=ddl['table_name'], ddl=ddl['sql_string'])
+    def create_schemas(cls, tables: List[Table]) -> List['Schema']:
+        srt_key = lambda x: x.schema
+        tables.sort(key=srt_key)
+        gb = groupby(tables, key=srt_key)
+        gb = {x[0]: [t for t in x[1]] for x in gb}
+        return [cls(key, value) for key, value in gb.items()]
 
+
+class SchemaCatalog:
+
+    def __init__(self, schemas: List[Schema]):
+        self._catalog = {s.name: {t.name: t for t in s.tables} for s in schemas}
+
+    @property
+    def schemas(self) -> List[str]:
+        return [s for s in self._catalog.keys()]
+
+    def get_table(self, schema: str, table: str) -> Table:
+        return self._catalog[schema][table]
+
+    def get_tables(self, schema: str):
+        return self._catalog[schema]
+
+    def get_table_list(self, schema: str):
+        tables = self._catalog[schema]
+        return [v for k, v in tables.items()]
 
 
 # TODO: The column order is not always the same. Needs to be fixed.
@@ -133,3 +198,9 @@ class IntrospectTables(DbIntro):
     def save_files(self, tables: pd.DataFrame) -> pd.DataFrame:
         tables.apply(lambda x: x['paths'].joinpath(f"{x['table_name']}.sql").write_text(x['sql_string']), axis=1)
         return tables
+
+    def get_schema_catalog(self):
+        sql = self.construct_sql(*self.fetch_data())
+        tables = sql.apply(lambda x: Table(schema=x.schema_name, name=x.table_name, ddl=x.sql_string), axis=1).to_list()
+        schemas = Schema.create_schemas(tables)
+        return SchemaCatalog(schemas)

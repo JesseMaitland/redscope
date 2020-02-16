@@ -28,7 +28,7 @@ update:
 
 lint:
 	. venv/bin/activate \
-	&& python -m flake8 ./aws_lambda_package ./tests
+	&& python -m flake8 ./redscope ./tests
 
 unit_test:
 	. venv/bin/activate \

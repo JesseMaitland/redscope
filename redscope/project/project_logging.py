@@ -8,7 +8,7 @@ import logging
 
 def logger_factory(file_name,
                    logger_name=__name__,
-                   format_string= '%(levelname)s : %(asctime)s : %(name)s : %(message)s',
+                   format_string='%(levelname)s : %(asctime)s : %(name)s : %(message)s',
                    print_stream=True,
                    logging_level='INFO') -> logging.Logger:
     """

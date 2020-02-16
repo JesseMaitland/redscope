@@ -38,7 +38,9 @@ setup(
     ],
     license='MIT',
     packages=find_packages(exclude=('tests*', 'venv', 'database*')),
-    scripts=["bin/redscope"],
+    entry_points={
+        'console_scripts': ['redscope = redscope.__main__:main']
+    },
     download_url="https://github.com/JesseMaitland/redscope",
     long_description_content_type="text/markdown",
     python_requires='>=3',
