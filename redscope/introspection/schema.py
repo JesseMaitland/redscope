@@ -1,11 +1,11 @@
 from typing import Tuple
 from redscope.project.project import Folders
 from redscope.database.models import Catalog
-from redscope.introspection.dbintro import DbIntro
+from redscope.introspection.base_db_intro import BaseDbIntro
 import pandas as pd
 
 
-class IntrospectSchema(DbIntro):
+class IntrospectSchema(BaseDbIntro):
 
     def __init__(self, db_connection, catalog: Catalog, folders: Folders):
         super().__init__(db_connection, catalog, folders, "schema_path", "schema_name")

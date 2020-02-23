@@ -2,7 +2,7 @@
 from itertools import groupby
 from redscope.project.project import Folders
 from redscope.database.models import Catalog
-from redscope.introspection.dbintro import DbIntro
+from redscope.introspection.base_db_intro import BaseDbIntro
 from typing import Tuple, List
 import pandas as pd
 
@@ -109,8 +109,7 @@ class SchemaCatalog:
         return [v for k, v in tables.items()]
 
 
-# TODO: The column order is not always the same. Needs to be fixed.
-class IntrospectTables(DbIntro):
+class IntrospectTables(BaseDbIntro):
 
     def __init__(self, db_connection, catalog: Catalog, folders: Folders):
         super().__init__(db_connection, catalog, folders, "schema_path", "table_name")

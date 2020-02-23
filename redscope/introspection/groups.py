@@ -1,11 +1,11 @@
 from redscope.project.project import Folders
 from redscope.database.models import Catalog
-from redscope.introspection.dbintro import DbIntro
+from redscope.introspection.base_db_intro import BaseDbIntro
 import pandas as pd
 from typing import Tuple
 
 
-class IntrospectGroups(DbIntro):
+class IntrospectGroups(BaseDbIntro):
 
     def __init__(self, db_connection, catalog: Catalog, folders: Folders):
         super().__init__(db_connection, catalog, folders, "groups_path", "group_name")

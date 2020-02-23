@@ -5,7 +5,7 @@ from redscope.database.models import Catalog
 import pandas as pd
 
 
-class DbIntro(ABC):
+class BaseDbIntro(ABC):
 
     def __init__(self, db_connection, catalog: Catalog, folders: Folders, root_path: str, sql_obj_name: str):
         self.catalog = catalog

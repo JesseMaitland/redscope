@@ -5,3 +5,4 @@ SELECT relname as table_name,
        INNER JOIN pg_namespace ns
           ON c.relnamespace = ns.oid
  WHERE relname IN ('jobs', 'job_slots', 'companies')
+ORDER BY table_name, schema_name
