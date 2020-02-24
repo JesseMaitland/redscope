@@ -8,6 +8,11 @@ class DDL(ABC):
 
     @property
     @abstractmethod
+    def file_name(self) -> str:
+        pass
+
+    @property
+    @abstractmethod
     def create(self) -> str:
         pass
 

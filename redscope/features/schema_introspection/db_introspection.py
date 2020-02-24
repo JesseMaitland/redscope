@@ -46,3 +46,11 @@ def introspect_groups(db_connection) -> DbCatalog:
     intro = DbIntrospection(queries, 'groups')
     groups = intro.call()
     return DbCatalog(groups=groups)
+
+
+def introspect_db(db_connection) -> DbCatalog:
+    schemas = introspect_schemas(db_connection)
+    groups = introspect_groups(db_connection)
+
+    return DbCatalog(schemas=schemas.schemas,
+                     groups=groups.groups)
