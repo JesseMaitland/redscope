@@ -13,7 +13,7 @@ class Group(DDL):
 
     @property
     def create_if_not_exist(self) -> str:
-        return f"CREATE GROUP IF NOT EXISTS {self.name};"
+        return f"CREATE GROUP {self.name};"
 
     @property
     def drop(self) -> str:
@@ -21,4 +21,4 @@ class Group(DDL):
 
     @property
     def drop_if_exist(self) -> str:
-        return f"DROP GROUP IF EXISTS {self.name};"
+        return f"DROP GROUP {self.name};"

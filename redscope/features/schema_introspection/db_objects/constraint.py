@@ -1,12 +1,13 @@
 from redscope.features.schema_introspection.db_objects.ddl import DDL
 
 
-class View(DDL):
+class Constraint(DDL):
 
-    def __init__(self, schema: str, name: str, ddl: str):
+    def __init__(self, name: str, schema: str, table: str, ddl: str):
         super().__init__(name)
         self.schema = schema
-        self.ddl = ddl
+        self.table = table
+        self._ddl = ddl
 
     @property
     def file_name(self) -> str:
@@ -14,16 +15,20 @@ class View(DDL):
 
     @property
     def create(self) -> str:
-        return f"CREATE VIEW {self.schema}.{self.name} AS \n {self.ddl};"
+        return f""
 
     @property
     def create_if_not_exist(self) -> str:
-        return f"CREATE OR REPLACE VIEW {self.schema}.{self.name} AS \n {self.ddl};"
+        return f""
 
     @property
     def drop(self) -> str:
-        return f"DROP VIEW {self.schema}.{self.name};"
+        return f""
 
     @property
     def drop_if_exist(self) -> str:
-        return f"DROP VIEW IF EXISTS {self.schema}.{self.name};"
+        return f""
+
+    @property
+    def ddl(self) -> str:
+        return f"CONSTRAINT {self.name} {self._ddl}"

@@ -11,10 +11,40 @@ class FilePaths:
 
         for name in db_object_names:
             ddl = db_catalog.get_db_objects(name)
-            print(ddl)
-            path = self.dir_context.get_dir(name)
 
             for d in ddl:
-                p = path / d.file_name
-                p.touch(exist_ok=True)
-                p.write_text(d.create_if_not_exist)
+
+                if name == 'schemas':
+                    path = self.dir_context.get_dir(name)
+                    path = path / d.name
+                    path.mkdir(exist_ok=True, parents=True)
+
+                    path = path / d.file_name
+                    path.touch(exist_ok=True)
+                    path.write_text(d.create_if_not_exist)
+
+                elif name in ['tables', 'views']:
+                    path = self.dir_context.get_dir('schemas')
+                    path = path / d.schema / name
+                    path.mkdir(parents=True, exist_ok=True)
+
+                    path = path / d.file_name
+                    path.touch(exist_ok=True)
+                    path.write_text(d.create_if_not_exist)
+
+                elif name in ['groups', 'users']:
+                    path = self.dir_context.get_dir('permissions')
+                    path = path / name
+                    path.mkdir(parents=True, exist_ok=True)
+
+                    path = path / d.file_name
+                    path.touch(exist_ok=True)
+                    path.write_text(d.create_if_not_exist)
+
+
+                else:
+                    path = self.dir_context.get_dir(name)
+                    path.mkdir(exist_ok=True, parents=True)
+                    p = path / d.file_name
+                    p.touch(exist_ok=True)
+                    p.write_text(d.create_if_not_exist)

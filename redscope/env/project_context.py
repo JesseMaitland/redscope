@@ -7,7 +7,7 @@ class DirContext:
     def __init__(self):
 
         root_name = 'database'
-        main_dir_names = ['migrations', 'schemas', 'tables', 'groups', 'permissions', 'users', 'views', 'logs']
+        main_dir_names = ['migrations', 'schemas', 'permissions', 'logs']
 
         self.root_path = Path.cwd().absolute() / root_name
         self._paths: Dict[str: Path] = {}

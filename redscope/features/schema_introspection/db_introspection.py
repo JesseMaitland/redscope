@@ -8,7 +8,7 @@ from redscope.features.schema_introspection.db_objects.db_catalog import DbCatal
 
 class DbIntrospection:
 
-    allowed_db_objects = ['groups', 'schemas', 'users', 'permissions', 'tables']
+    allowed_db_objects = ['groups', 'schemas', 'users', 'permissions', 'tables', 'views', 'constraints']
 
     def __init__(self, intro_queries: IntrospectionQueries, db_object: str):
 
@@ -48,9 +48,52 @@ def introspect_groups(db_connection) -> DbCatalog:
     return DbCatalog(groups=groups)
 
 
+def introspect_views(db_connection) -> DbCatalog:
+    queries = IntrospectionQueries(db_connection)
+    intro = DbIntrospection(queries, 'views')
+    views = intro.call()
+    return DbCatalog(views=views)
+
+
+def introspect_constraints(db_connection) -> DbCatalog:
+    queries = IntrospectionQueries(db_connection)
+    intro = DbIntrospection(queries, 'constraints')
+    constraints = intro.call()
+    return DbCatalog(constraints=constraints)
+
+
+def introspect_tables(db_connection) -> DbCatalog:
+    queries = IntrospectionQueries(db_connection)
+    intro = DbIntrospection(queries, 'tables')
+    tables = intro.call()
+    constraints = introspect_constraints(db_connection)
+
+    for table in tables:
+        for constraint in constraints.constraints:
+
+            if constraint.schema == table.schema and constraint.table == table.name:
+                table.add_constraint(constraint)
+
+    return DbCatalog(tables=tables)
+
+
+def introspect_users(db_connection) -> DbCatalog:
+    queries = IntrospectionQueries(db_connection)
+    intro = DbIntrospection(queries, 'users')
+    users = intro.call()
+    return DbCatalog(users=users)
+
+
 def introspect_db(db_connection) -> DbCatalog:
     schemas = introspect_schemas(db_connection)
     groups = introspect_groups(db_connection)
-
+    views = introspect_views(db_connection)
+    tables = introspect_tables(db_connection)
+    users = introspect_users(db_connection)
     return DbCatalog(schemas=schemas.schemas,
-                     groups=groups.groups)
+                     groups=groups.groups,
+                     views=views.views,
+                     tables=tables.tables,
+                     users=users.users)
+
+

@@ -1,7 +1,11 @@
 from redscope.features.schema_introspection.db_objects.ddl import DDL
 
 
-class User(DDL):
+class UserGroup(DDL):
+
+    def __init__(self, name: str, group: str):
+        super().__init__(name)
+        self.group = group
 
     @property
     def file_name(self) -> str:
