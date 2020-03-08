@@ -1,10 +1,16 @@
-from redscope.env.project_context import DirContext
-from redscope.features.migrations.migration_manager import MigrationManager, MigrationParser
+from pathlib import Path
+from redscope.api import introspect_db
+from redscope.env import load_redscope_env
+from redscope.database.db_connections import get_db_connection
 
 
-dc = DirContext()
-mm = MigrationManager(dc.get_dir('migrations'))
-mig = mm.get_migration('foo')
+env_path = Path("/Users/jessemaitland/PycharmProjects/redscope/stg.env")
+load_redscope_env(env_path)
+db_connection = get_db_connection('REDSCOPE_DB_URL')
+db_catalog = introspect_db(db_connection)
 
-print(mig.up)
-print(mig.down)
+
+tables = db_catalog.get_tables_by_schema('dds')
+
+for k, v in tables.items():
+    print(k, v)

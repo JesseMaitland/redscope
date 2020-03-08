@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Dict
 from redscope.features.schema_introspection.db_objects.ddl import DDL
 from redscope.features.schema_introspection.db_objects.schema import Schema
 from redscope.features.schema_introspection.db_objects.group import Group
@@ -77,3 +77,6 @@ class DbCatalog:
 
     def get_constraint(self, name: str) -> Constraint:
         return self._constraints[name]
+
+    def get_tables_by_schema(self, schema: str) -> Dict[str, Table]:
+        return {table.full_name: table for table in self.tables if table.schema == schema}
