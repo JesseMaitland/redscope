@@ -4,8 +4,10 @@ commands:
     - init
     - migrate
     - new
-    - show
+    - list
     - intro
+    - outstanding
+    - applied
     help: Actions which can be performed
   object:
     choices:

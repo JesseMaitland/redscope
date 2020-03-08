@@ -17,19 +17,35 @@ def get_terminal_logger(name: str, print_stream: bool = True) -> Logger:
 
 
 @provide_cmd_args(RAMBO_CONFIG_PATH)
-def _init_env(cmd_args):
+def _init_env(cmd_args, provide_db: bool):
     env.load_redscope_env(cmd_args.env_file)
-    return db_connections.get_db_connection(cmd_args.env_var)
+    if provide_db:
+        return db_connections.get_db_connection(cmd_args.env_var), cmd_args
+    else:
+        return None, cmd_args
 
 
-def init_terminal_env(func):
-    def wrapper(*args, **kwargs):
-        try:
-            db_conn = _init_env()
-            return func(db_conn=db_conn, *args, **kwargs)
-        except Exception:
-            logger = get_terminal_logger(__name__, print_stream=False)
-            logger.exception("redscope exception")
-            print(f"an exception occurred while running redscope. Check log in /database/redscope.log")
-            exit()
-    return wrapper
+def init_terminal_env(provide_db: bool, provide_cmd: bool):
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            try:
+                db_conn, cmd_args = _init_env(provide_db=provide_db)
+
+                if db_conn and provide_cmd:
+                    return func(db_conn=db_conn, cmd_args=cmd_args, *args, **kwargs)
+
+                elif not db_conn and provide_cmd:
+                    return func(cmd_args=cmd_args, *args, **kwargs)
+
+                elif db_conn and not provide_cmd:
+                    return func(db_conn=db_conn, *args, **kwargs)
+
+                else:
+                    return func(*args, **kwargs)
+            except Exception:
+                logger = get_terminal_logger(__name__, print_stream=False)
+                logger.exception("redscope exception")
+                print(f"an exception occurred while running redscope. Check log in /database/redscope.log")
+                exit()
+        return wrapper
+    return decorator
