@@ -60,15 +60,21 @@ class MigrationManager:
 
     def list_migrations(self) -> List[Migration]:
         migrations = self.migration_dir.glob('**/*.sql')
-        return [MigrationParser(m).parse() for m in migrations]
+        migrations = [MigrationParser(m).parse() for m in migrations]
+        self._sort_migrations(migrations)
+        return migrations
 
     def list_applied_migrations(self) -> List[Migration]:
-        return self._run_query(Migration.select)
+        applied_migrations = self._run_query(Migration.select)
+        self._sort_migrations(applied_migrations)
+        return applied_migrations
 
     def list_outstanding_migrations(self) -> List[Migration]:
         all_migrations = self.list_migrations()
         applied_migrations = self.list_applied_migrations()
-        return [m for m in all_migrations if m.full_name not in [am.full_name for am in applied_migrations]]
+        outstanding = [m for m in all_migrations if m.full_name not in [am.full_name for am in applied_migrations]]
+        self._sort_migrations(outstanding)
+        return outstanding
 
     def get_migration(self, name: str) -> Migration:
         migration = next((m for m in self.list_migrations() if m.name == name), None)
@@ -115,3 +121,7 @@ class MigrationManager:
                 self.db_connection.rollback()
                 raise
         return [MigrationParser(Path(result[2]).absolute()).parse() for result in results]
+
+    def _sort_migrations(self, migrations: List[Migration]) -> List[Migration]:
+        migrations.sort(key=lambda x: x.key)
+        return migrations

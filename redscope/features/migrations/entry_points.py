@@ -39,7 +39,10 @@ def migrate_up(db_conn, cmd_args):
         mm.execute_migration(migration, mode='up')
 
     else:
-        raise NotImplemented
+        migrations = mm.list_outstanding_migrations()
+
+        for migration in migrations:
+            mm.execute_migration(migration, mode='up')
 
 
 @init_terminal_env(provide_db=True, provide_cmd=True)
