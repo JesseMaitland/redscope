@@ -8,7 +8,7 @@ from redscope.features.schema_introspection.db_objects.db_catalog import DbCatal
 
 class DbIntrospection:
 
-    allowed_db_objects = ['groups', 'schemas', 'users', 'permissions', 'tables', 'views', 'constraints']
+    allowed_db_objects = ['groups', 'schemas', 'users', 'permissions', 'tables', 'views', 'constraints', 'usergroups']
 
     def __init__(self, intro_queries: IntrospectionQueries, db_object: str):
 
@@ -46,6 +46,13 @@ def introspect_groups(db_connection) -> DbCatalog:
     intro = DbIntrospection(queries, 'groups')
     groups = intro.call()
     return DbCatalog(groups=groups)
+
+
+def introspect_user_groups(db_connection) -> DbCatalog:
+    queries = IntrospectionQueries(db_connection)
+    intro = DbIntrospection(queries, 'usergroups')
+    user_groups = intro.call()
+    return DbCatalog(user_groups=user_groups)
 
 
 def introspect_views(db_connection) -> DbCatalog:

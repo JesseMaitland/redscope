@@ -1,4 +1,6 @@
+from pathlib import Path
 from redscope.env.project_context import DirContext
+from redscope.features.schema_introspection.db_objects.ddl import DDL
 from redscope.features.schema_introspection.db_objects.db_catalog import DbCatalog
 
 
@@ -7,44 +9,40 @@ class FilePaths:
     def __init__(self):
         self.dir_context = DirContext()
 
+    def make_dir_and_file(self, ddl: DDL, path: Path):
+        path.mkdir(exist_ok=True, parents=True)
+        path = path / ddl.file_name
+        path.touch(exist_ok=True)
+        path.write_text(ddl.create_if_not_exist)
+
     def save_files(self, db_catalog: DbCatalog, *db_object_names):
 
         for name in db_object_names:
-            ddl = db_catalog.get_db_objects(name)
+            ddls = db_catalog.get_db_objects(name)
 
-            for d in ddl:
+            for ddl in ddls:
 
-                if name == 'schemas':
+                # TODO: clean this up
+                if name in ['schemas']:
                     path = self.dir_context.get_dir(name)
-                    path = path / d.name
-                    path.mkdir(exist_ok=True, parents=True)
-
-                    path = path / d.file_name
-                    path.touch(exist_ok=True)
-                    path.write_text(d.create_if_not_exist)
+                    path = path / ddl.name
+                    self.make_dir_and_file(ddl, path)
 
                 elif name in ['tables', 'views']:
                     path = self.dir_context.get_dir('schemas')
-                    path = path / d.schema / name
-                    path.mkdir(parents=True, exist_ok=True)
+                    path = path / ddl.schema / name
+                    self.make_dir_and_file(ddl, path)
 
-                    path = path / d.file_name
-                    path.touch(exist_ok=True)
-                    path.write_text(d.create_if_not_exist)
-
-                elif name in ['groups', 'users']:
+                elif name == 'groups':
                     path = self.dir_context.get_dir('permissions')
                     path = path / name
-                    path.mkdir(parents=True, exist_ok=True)
+                    self.make_dir_and_file(ddl, path)
 
-                    path = path / d.file_name
-                    path.touch(exist_ok=True)
-                    path.write_text(d.create_if_not_exist)
-
+                elif name == 'users':
+                    path = self.dir_context.get_dir('permissions')
+                    path = path / name / ddl.name
+                    self.make_dir_and_file(ddl, path)
 
                 else:
                     path = self.dir_context.get_dir(name)
-                    path.mkdir(exist_ok=True, parents=True)
-                    p = path / d.file_name
-                    p.touch(exist_ok=True)
-                    p.write_text(d.create_if_not_exist)
+                    self.make_dir_and_file(ddl, path)

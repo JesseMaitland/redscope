@@ -13,16 +13,16 @@ class UserGroup(DDL):
 
     @property
     def create(self) -> str:
-        return f"CREATE USER {self.name} WITH PASSWORD 'xxxxxxxxxx';"
+        return f""
 
     @property
     def create_if_not_exist(self) -> str:
-        return f"CREATE USER {self.name} WITH PASSWORD 'xxxxxxxxxx';"
+        return f""
 
     @property
     def drop(self) -> str:
-        return f"DROP USER {self.name};"
+        return f""
 
     @property
     def drop_if_exist(self) -> str:
-        return f"DROP USER {self.name};"
+        return f""
