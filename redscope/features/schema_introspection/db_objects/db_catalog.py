@@ -26,7 +26,7 @@ class DbCatalog:
         self._tables = tables or {}
         self._users = users or {}
         self._constraints = constraints or {}
-        self._user_groups = user_groups or {}
+        self._usergroups = user_groups or {}
 
         self._schemas = {schema.name: schema for schema in self._schemas}
         self._groups = {group.name: group for group in self._groups}
@@ -34,7 +34,7 @@ class DbCatalog:
         self._tables = {table.full_name: table for table in self._tables}
         self._users = {user.name: user for user in self._users}
         self._constraints = {constraint.name: constraint for constraint in self._constraints}
-        self._user_groups = {user_group.name: user_group for user_group in self._user_groups}
+        self._usergroups = {user_group.name: user_group for user_group in self._usergroups}
 
     @property
     def schemas(self) -> List[Schema]:
@@ -62,7 +62,7 @@ class DbCatalog:
 
     @property
     def user_groups(self) -> List[UserGroup]:
-        return [user_group for user_group in self._user_groups.values()]
+        return [user_group for user_group in self._usergroups.values()]
 
     def get_db_objects(self, db_obj_type: str) -> List[DDL]:
         ddl_objs = getattr(self, f"_{db_obj_type}")
@@ -87,7 +87,7 @@ class DbCatalog:
         return self._constraints[name]
 
     def get_user_group(self, name: str) -> UserGroup:
-        return self._user_groups[name]
+        return self._usergroups[name]
 
     def get_tables_by_schema(self, schema: str) -> Dict[str, Table]:
         return {table.full_name: table for table in self.tables if table.schema == schema}

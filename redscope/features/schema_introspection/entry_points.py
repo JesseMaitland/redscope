@@ -7,4 +7,4 @@ from redscope.features.schema_introspection.file_paths.file_paths import FilePat
 def intro_db(db_conn):
     db_catalog = introspect_db(db_conn)
     file_paths = FilePaths()
-    file_paths.save_files(db_catalog, 'schemas', 'groups', 'views', 'tables', 'users')
+    file_paths.save_files(db_catalog, 'schemas', 'groups', 'views', 'tables', 'users', 'usergroups')

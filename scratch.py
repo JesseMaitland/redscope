@@ -9,4 +9,4 @@ load_redscope_env(env_path)
 db_connection = get_db_connection('REDSCOPE_DB_URL')
 db_catalog = introspect_user_groups(db_connection)
 
-print(db_catalog.user_groups)
+

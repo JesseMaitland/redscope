@@ -97,10 +97,12 @@ def introspect_db(db_connection) -> DbCatalog:
     views = introspect_views(db_connection)
     tables = introspect_tables(db_connection)
     users = introspect_users(db_connection)
+    user_groups = introspect_user_groups(db_connection)
     return DbCatalog(schemas=schemas.schemas,
                      groups=groups.groups,
                      views=views.views,
                      tables=tables.tables,
-                     users=users.users)
+                     users=users.users,
+                     user_groups=user_groups.user_groups)
 
 

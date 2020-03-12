@@ -38,9 +38,9 @@ class FilePaths:
                     path = path / name
                     self.make_dir_and_file(ddl, path)
 
-                elif name == 'users':
+                elif name in ['users', 'usergroups']:
                     path = self.dir_context.get_dir('permissions')
-                    path = path / name / ddl.name
+                    path = path / 'users' / ddl.name
                     self.make_dir_and_file(ddl, path)
 
                 else:
