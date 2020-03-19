@@ -1,7 +1,6 @@
 from pathlib import Path
 from abc import ABC, abstractmethod
 from psycopg2.extensions import connection
-import pandas as pd
 
 
 class QueryNotFoundError(Exception):
@@ -73,4 +72,3 @@ class IntrospectionQueries(BaseQueries):
     def call_query(self, name: str):
         query = self.db_queries.get_query(name)
         return self.execute_query(query)
-

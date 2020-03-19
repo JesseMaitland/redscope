@@ -104,5 +104,3 @@ def introspect_db(db_connection) -> DbCatalog:
                      tables=tables.tables,
                      users=users.users,
                      user_groups=user_groups.user_groups)
-
-

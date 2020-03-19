@@ -30,6 +30,3 @@ class DDL(ABC):
     @abstractmethod
     def drop_if_exist(self) -> str:
         pass
-
-
-

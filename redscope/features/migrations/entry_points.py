@@ -54,7 +54,7 @@ def migrate_down(db_conn, cmd_args):
         mm.execute_migration(migration, 'down')
 
     else:
-        raise NotImplemented
+        raise NotImplementedError
 
 
 @init_terminal_env(provide_db=True, provide_cmd=False)
