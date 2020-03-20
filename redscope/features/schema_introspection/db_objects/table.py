@@ -33,9 +33,9 @@ class Table(DDL):
         else:
             return f"CREATE TABLE IF NOT EXISTS {self.full_name} \n(\n{self.ddl}\n);"
 
-    @property
-    def create_external_table(self) -> str:
-        return f"CREATE EXTERNAL TABLE IF NOT EXISTS {self.full_name} \n(\n{self.simple_ddl}\n);"
+    def create_external_table(self, schema: str = None) -> str:
+        schema = schema or self.schema
+        return f"CREATE EXTERNAL TABLE IF NOT EXISTS {schema}.{self.name} \n(\n{self.simple_ddl}\n);"
 
     @property
     def drop(self) -> str:
