@@ -18,7 +18,7 @@ class DbIntrospection:
         self.intro_queries = intro_queries
         self.db_object = db_object
         self.formatter_path = Path(__file__).parent.relative_to(Path.cwd()) / "formatters" / db_object
-        self.formatter_path = self.formatter_path.as_posix().replace('/', '.')
+        self.formatter_path = self.formatter_path.as_posix().replace('/', '.').lstrip('.')
 
     def call(self):
         formatter = self.import_formatter()
@@ -29,7 +29,7 @@ class DbIntrospection:
         return self.intro_queries.call_query(self.db_object)
 
     def import_formatter(self) -> DDLFormatter:
-        formatter_module = import_module(self.formatter_path, package=__name__)
+        formatter_module = import_module(self.formatter_path)
         formatter = getattr(formatter_module, f"{self.db_object.capitalize().rstrip('s')}Formatter")
         return formatter()
 
