@@ -1,4 +1,4 @@
-include redscope/terminal/rambo.yml
+include redscope/features/terminal/rambo.yml
 include redscope/database/queries/migrations/ddl/*.sql
 include redscope/database/queries/migrations/dml/*.sql
 include redscope/database/queries/introspection/*.sql
