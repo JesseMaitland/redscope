@@ -1,4 +1,3 @@
-include redscope/features/terminal/rambo.yml
 include redscope/features/migrations/migration_template.sql
 include redscope/database/queries/migrations/ddl/*.sql
 include redscope/database/queries/migrations/dml/*.sql
