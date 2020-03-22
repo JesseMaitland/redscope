@@ -33,13 +33,15 @@ setup(
     install_requires=[
         'PTable',
         'psycopg2-binary',
-        'python-dotenv'
+        'python-dotenv',
+        'PyYAML'
     ],
     license='MIT',
     packages=find_packages(exclude=('tests*', 'venv', 'database*')),
     entry_points={
         'console_scripts': ['redscope-intro = redscope.terminal.__main__:main_introspection',
                             'redscope-migrate = redscope.terminal.__main__:main_migration',
+                            'redscope-unload = redscope.terminal.__main__:main_unload',
                             'redscope = redscope.terminal.__main__:main_project_init']
     },
     download_url="https://github.com/JesseMaitland/redscope",

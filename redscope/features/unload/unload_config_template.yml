@@ -1,0 +1,14 @@
+unload_config:
+  schema: schema name here
+  table: table name here
+  ts_column: the name of the column we should use to unload by time
+  frequency: how to break up the data, valid choices are year, month, week, day, year
+  starting_from: where to start from
+  ending_at: where to end at, set to today for continous unloading
+  partition_value: the value used for the final s3 key
+  partition_keys: the keys to create the directory structure in. order here counts
+    - foo
+    - bar
+    - baz
+  create_external_schema: set this to True to automatically create a new external schema, otherwise False
+  external_schema_name: the name of the external schema to attach the table to

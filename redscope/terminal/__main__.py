@@ -31,3 +31,9 @@ def main_project_init():
     from redscope.features.project.entrypoints import project_args, InitProjectEntryPoint
     args_config.update(project_args)
     InitProjectEntryPoint(args_config=args_config).call()
+
+
+def main_unload():
+    from redscope.features.unload.entrypoints import unload_args, UnloadEntryPoint
+    args_config.update(unload_args)
+    UnloadEntryPoint(args_config=args_config).call()
