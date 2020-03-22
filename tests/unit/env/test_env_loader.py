@@ -1,7 +1,7 @@
 import unittest
 import os
 from pathlib import Path
-from redscope.env import load_redscope_env, env_path_valid
+from redscope.terminal.tools.entry import load_redscope_env, env_path_valid
 
 
 class TestRedscopeEnvLoader(unittest.TestCase):

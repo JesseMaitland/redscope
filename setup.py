@@ -31,15 +31,16 @@ setup(
     include_package_data=True,
     long_description=readme(),
     install_requires=[
-        'rambo-py',
+        'PTable',
         'psycopg2-binary',
-        'pandas',
         'python-dotenv'
     ],
     license='MIT',
     packages=find_packages(exclude=('tests*', 'venv', 'database*')),
     entry_points={
-        'console_scripts': ['redscope = redscope.__main__:main']
+        'console_scripts': ['redscope-intro = redscope.terminal.__main__:main_introspection',
+                            'redscope-migrate = redscope.terminal.__main__:main_migration',
+                            'redscope = redscope.terminal.__main__:main_project_init']
     },
     download_url="https://github.com/JesseMaitland/redscope",
     long_description_content_type="text/markdown",
