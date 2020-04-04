@@ -31,3 +31,9 @@ def main_project_init():
     from redscope.features.project.entrypoints import project_args, InitProjectEntryPoint
     args_config.update(project_args)
     InitProjectEntryPoint(args_config=args_config).call()
+
+
+def main_search():
+    from redscope.features.search.entrypoints import search_args, SearchFunctionEntryPoint
+    args_config.update(search_args)
+    SearchFunctionEntryPoint(args_config=args_config).call()

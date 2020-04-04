@@ -40,6 +40,7 @@ setup(
     entry_points={
         'console_scripts': ['redscope-intro = redscope.terminal.__main__:main_introspection',
                             'redscope-migrate = redscope.terminal.__main__:main_migration',
+                            'redscope-search = redscope.terminal.__main__:main_search',
                             'redscope = redscope.terminal.__main__:main_project_init']
     },
     download_url="https://github.com/JesseMaitland/redscope",
