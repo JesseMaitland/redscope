@@ -16,6 +16,18 @@ search_args = {
     ('file_name',): {
         'help': "what to name the output file including extension",
         'type': str
+    },
+
+    ('--table', '-t'): {
+        'help': "optional list of table names to search for",
+        'nargs': '+',
+        'default': None
+    },
+
+    ('--search_file', '-sf'): {
+        'help': "optional path to plain .txt file which contains a list of strings to search for seperated by spaces or new lines",
+        'type': Path,
+        'default': None
     }
 }
 
@@ -27,9 +39,21 @@ class SearchFunctionEntryPoint(EntryPoint):
         self.set_db_connection()
 
     def call(self) -> None:
-        table_names = self.get_table_names()
+
+        table_names = self.get_search_strings()
         search_results = self.search_sql_files(table_names)
         self.save_text_file(search_results)
+
+    def get_search_strings(self) -> List[str]:
+
+        if self.cmd_args.table:
+            return self.cmd_args.table
+
+        elif self.cmd_args.search_file:
+            return self.cmd_args.search_file.read_text().split()
+
+        else:
+            return self.get_table_names()
 
     def get_table_names(self) -> List[str]:
         data_catalog = introspect_tables(self.db_connection)
@@ -37,12 +61,13 @@ class SearchFunctionEntryPoint(EntryPoint):
 
     def search_sql_files(self, table_names: List[str]) -> SearchResult:
         paths = search_directory(self.cmd_args.path, 'sql')
+        search_file_types = [SQLFile, PythonFile]
         results = []
         for path in paths:
-            search_result = SQLFile(path).search(table_names)
-
-            if not search_result.empty():
-                results.append(search_result)
+            for search_file_type in search_file_types:
+                search_result = search_file_type(path).search(table_names)
+                if not search_result.empty():
+                    results.append(search_result)
 
         return SearchResult.combine_results(*results)
 

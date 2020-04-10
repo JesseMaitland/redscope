@@ -1,3 +1,4 @@
+import re
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import List, Iterator, Dict, Tuple
@@ -72,8 +73,12 @@ class BaseFileSearcher(ABC):
         text_to_search = self._get_text_to_search()
 
         for search_string in search_strings:
+            # do a coarse search first using the in operator because it is loads faster
             if search_string in text_to_search:
-                search_results[search_string] = self.path
+                # if the string is in our text to search, do a more exact search using regex
+                pattern = re.compile(rf"\b{search_string}\b")
+                if pattern.search(text_to_search):
+                    search_results[search_string] = self.path
 
         return search_results
 
