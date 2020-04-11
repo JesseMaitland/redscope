@@ -104,8 +104,8 @@ class SQLFile(BaseFileSearcher):
                 if '/*' in line:    # if we find a multi-line comment, skip lines until we find the end marker.
 
                     for comment_line in file:
-                        if '*/' not in comment_line:
-                            continue
+                        if '*/' in comment_line:
+                            break
 
                 if '--' in line:    # in all cases just skip comment lines
                     continue
