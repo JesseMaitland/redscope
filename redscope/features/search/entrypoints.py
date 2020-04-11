@@ -60,11 +60,12 @@ class SearchFunctionEntryPoint(EntryPoint):
         return [t.full_name for t in data_catalog.tables]
 
     def search_sql_files(self, table_names: List[str]) -> SearchResult:
-        paths = search_directory(self.cmd_args.path, 'sql')
         search_file_types = [SQLFile, PythonFile]
         results = []
-        for path in paths:
-            for search_file_type in search_file_types:
+
+        for search_file_type in search_file_types:
+            paths = search_directory(self.cmd_args.path, search_file_type.ext)
+            for path in paths:
                 search_result = search_file_type(path).search(table_names)
                 if not search_result.empty():
                     results.append(search_result)

@@ -5,7 +5,7 @@ from typing import List, Iterator, Dict, Tuple
 
 
 def search_directory(path: Path, extension: str) -> Iterator[Path]:
-    glob_pattern = f"**/*.{extension}"
+    glob_pattern = f"**/*{extension}"
     return path.glob(glob_pattern)
 
 
@@ -89,6 +89,8 @@ class BaseFileSearcher(ABC):
 
 class SQLFile(BaseFileSearcher):
 
+    ext = ".sql"
+
     def __init__(self, path: Path):
         super().__init__(path=path)
 
@@ -114,6 +116,8 @@ class SQLFile(BaseFileSearcher):
 
 
 class PythonFile(BaseFileSearcher):
+
+    ext = ".py"
 
     def __init__(self, path: Path):
         super().__init__(path=path)
