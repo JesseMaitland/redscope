@@ -4,11 +4,12 @@ from redscope.database.models import MigrationQueries
 
 class Migration(MigrationQueries):
 
-    def __init__(self, file_path: Path, up: str = None, down: str = None):
+    def __init__(self, file_path: Path, up: str = None, down: str = None, run_state: str = None):
         super().__init__()
         self._file_path = file_path
         self._up = up or ''
         self._down = down or ''
+        self._run_state = run_state or 'not yet run'
 
     @property
     def up(self) -> str:
@@ -37,3 +38,7 @@ class Migration(MigrationQueries):
     @property
     def name(self) -> str:
         return self.full_name.split('-')[-1]
+
+    @property
+    def run_state(self) -> str:
+        return self._run_state

@@ -1,3 +1,5 @@
+# flake8: noqa W291
+
 from pathlib import Path
 from abc import ABC, abstractmethod
 from psycopg2.extensions import connection
@@ -27,8 +29,16 @@ class MigrationQueries:
 
     insert = """INSERT INTO redscope.migrations(key, name, path, last_state, sql) VALUES (%s, %s, %s, %s, %s);"""
     update = """UPDATE redscope.migrations SET last_state = %s, sql = %s WHERE key = %s;"""
-    delete = """DELETE FROM redscope.migrations WHERE key = %s"""
-    select = """SELECT DISTINCT key, name, path FROM redscope.migrations ORDER BY key;"""
+    delete = """DELETE FROM redscope.migrations WHERE name = %s"""
+    select = """SELECT key, name, path, last_state 
+                  FROM redscope.migrations
+                       INNER JOIN (SELECT MAX(created_at) as last_created, key as lkey, name as lname 
+                                     FROM redscope.migrations
+                                   GROUP BY key, name) AS last_records
+                           ON last_records.last_created = redscope.migrations.created_at
+                              AND last_records.lkey = redscope.migrations.key
+                              AND last_records.lname = redscope.migrations.name 
+              ORDER BY key;"""
 
 
 class QueryCatalog:

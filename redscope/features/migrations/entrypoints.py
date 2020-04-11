@@ -10,11 +10,11 @@ migration_args = {
 
     ('action',): {
         'help': "the migration action you want to preform",
-        'choices': ['up', 'down', 'list', 'new']
+        'choices': ['up', 'down', 'list', 'new', 'remove']
     },
 
     ('--name', '-n'): {
-        'help': "use to set the name of the new migration you wish to create, must be unique.",
+        'help': "use to set the name of the new migration you wish to preform an action on.",
         'default': None,
         'dest': 'name'
     },
@@ -55,12 +55,13 @@ class MigrationsEntryPoint(EntryPoint):
         mm.create_file(migration_name)
 
     def list(self):
-        dc, mm = get_migration_context()
+        self.set_db_connection()
+        dc, mm = get_migration_context(self.db_connection)
         migrations = mm.list_migrations()
         table = PrettyTable()
-        table.field_names = ['key', 'name']
+        table.field_names = ['key', 'name', 'last state', 'file']
         for migration in migrations:
-            table.add_row([migration.key, migration.name])
+            table.add_row([migration.key, migration.name, migration.run_state, migration.file_name])
         print(table)
 
     def up(self):
@@ -69,16 +70,18 @@ class MigrationsEntryPoint(EntryPoint):
 
         if self.cmd_args.name:
             migration = mm.get_migration(self.cmd_args.name)
+            print(f"running migration {migration.full_name} up")
             mm.execute_migration(migration, mode='up')
 
         elif self.cmd_args.all:
-            migrations = mm.list_outstanding_migrations()
+            migrations = [m for m in mm.list_migrations() if m.run_state != 'up']
 
             for migration in migrations:
+                print(f"running migration {migration.full_name} up")
                 mm.execute_migration(migration, mode='up')
 
         else:
-            raise ValueError(f"either --name, -n flag must be provided, or the --all, -a flag must be set to run up")
+            raise ValueError(f"either a value for the -n flag must be provided, or the -a flag must be set")
 
     def down(self):
         self.set_db_connection()
@@ -86,7 +89,21 @@ class MigrationsEntryPoint(EntryPoint):
         dc, mm = get_migration_context(self.db_connection)
 
         migration = mm.get_migration(self.cmd_args.name)
+        print(f"running migration {migration.full_name} down")
         mm.execute_migration(migration, mode='down')
+
+    def remove(self):
+        self.set_db_connection()
+
+        # try to rollback the migration first, if it is already in the down state, it is likely to fail.
+        try:
+            self.down()
+        except Exception:
+            pass
+
+        dc, mm = get_migration_context(self.db_connection)
+        migration = mm.get_migration(self.cmd_args.name)
+        mm.delete_migration(migration)
 
 
 # TODO: refactor into main migration entry
