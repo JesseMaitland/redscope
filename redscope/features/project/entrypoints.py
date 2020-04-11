@@ -49,7 +49,9 @@ class InitProjectEntryPoint(EntryPoint):
 
         if self.cmd_args.project or self.cmd_args.all:
             dc = DirContext()
+            print(">>>>   creating redscope project directories")
             dc.init_dirs()
+            print(">>>>   created redscope project directories successfully!")
 
         if self.cmd_args.db or self.cmd_args.all:
             self.set_db_connection()
@@ -57,12 +59,17 @@ class InitProjectEntryPoint(EntryPoint):
             cursor = self.db_connection.cursor()
 
             try:
+                print(">>>>   initializing redscope schema")
+                print(ddl.create_schema)
                 cursor.execute(ddl.create_schema)
+                print(">>>>   initializing migration table")
+                print(ddl.create_migration_table)
                 cursor.execute(ddl.create_migration_table)
                 self.db_connection.commit()
-
+                print(">>>>   tables created successfully!")
             except Exception:
                 self.db_connection.rollback()
+                print(">>>>   failed to create tables for redscope migration feature")
                 raise
 
     def drop(self):

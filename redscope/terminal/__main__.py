@@ -1,9 +1,8 @@
-from pathlib import Path
 
 args_config = {
     ('--env-file', '-ef'): {
         'help': "the name of the .env file you would like to load. Must be located in the project root. Defaults to .env",
-        'default': Path.cwd() / ".env",
+        'default': ".env",
         'dest': 'env_file'
     },
 

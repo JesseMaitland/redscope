@@ -50,9 +50,20 @@ class MigrationsEntryPoint(EntryPoint):
     def new(self):
         self._validate_name(f"--name, -n flag value must be provided to create a new migration file.")
         migration_name = self.cmd_args.name.replace(' ', '-')
+
+        if '-' in [char for char in migration_name]:
+            print("the - char is not allowed in migration names, please use the _ instead")
+            return
+
         dc, mm = get_migration_context()
+
+        if migration_name in [lm.name for lm in mm.list_local_migrations()]:
+            print(f"migration names must be unique, name {migration_name} already exists.")
+            return
+
         migration_name = mm.generate_file_name(migration_name)
         mm.create_file(migration_name)
+        print(f"successfully created migration {migration_name}")
 
     def list(self):
         self.set_db_connection()
@@ -104,19 +115,3 @@ class MigrationsEntryPoint(EntryPoint):
         dc, mm = get_migration_context(self.db_connection)
         migration = mm.get_migration(self.cmd_args.name)
         mm.delete_migration(migration)
-
-
-# TODO: refactor into main migration entry
-def list_applied_migrations(db_conn: connection):
-    dc, mm = get_migration_context(db_conn)
-    applied_migrations = mm.list_applied_migrations()
-    for migration in applied_migrations:
-        print(migration.full_name)
-
-
-# TODO: refactor into main migration entry
-def outstanding_migrations(db_conn: connection):
-    dc, mm = get_migration_context(db_conn)
-    outstanding = mm.list_outstanding_migrations()
-    for out in outstanding:
-        print(out.full_name)
