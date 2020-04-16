@@ -65,6 +65,7 @@ class TableFormatter(DDLFormatter):
         line = line.replace(' double precision', ' FLOAT')
         line = line.replace(' boolean', ' BOOLEAN')
         line = line.replace(' date', ' DATE')
+        line = line.replace(' character', ' CHAR')
         return line
 
     @staticmethod

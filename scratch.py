@@ -1,24 +1,15 @@
 from pathlib import Path
-from redscope.api import get_db_connection, load_redscope_env
-from redscope.features.search.file_searching import search_directory, SQLFile, SearchResult
+from redscope.api import introspect_tables, load_redscope_env, get_db_connection
+
+env_path = Path("stg.env")
+load_redscope_env(env_path)
+
+db_connection = get_db_connection('redscope_db_url')
+
+db_catalog = introspect_tables(db_connection)
 
 
-# env_path = Path("/Users/jessemaitland/PycharmProjects/redscope/stg.env")
-# load_redscope_env(env_path)
-# db_connection = get_db_connection('REDSCOPE_DB_URL')
+t = db_catalog.get_table('dds.companies')
 
-
-search_path = Path("/Users/jessemaitland/PycharmProjects/redscope/database/schemas/dds")
-
-results = []
-for p in search_directory(search_path, 'sql'):
-    search_string = ["dds"]
-
-    result = SQLFile(path=p).search(search_string)
-
-    if not result.empty():
-        results.append(result)
-
-
-final_results = SearchResult.combine_results(*results)
-
+print(t.simple_ddl)
+print(t.create_if_not_exist)

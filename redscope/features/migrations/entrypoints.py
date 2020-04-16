@@ -1,10 +1,11 @@
 from typing import Tuple, Dict
+from pathlib import Path
 from prettytable import PrettyTable
 from psycopg2.extensions import connection
 from redscope.env.project_context import DirContext
 from redscope.terminal.tools.entry import EntryPoint
 from redscope.features.migrations.migration_manager import MigrationManager
-
+from redscope.features.migrations.migration_manager import MigrationNotFoundError, Migration
 
 migration_args = {
 
@@ -79,27 +80,38 @@ class MigrationsEntryPoint(EntryPoint):
         self.set_db_connection()
         dc, mm = get_migration_context(self.db_connection)
 
-        if self.cmd_args.name:
-            migration = mm.get_migration(self.cmd_args.name)
-            print(f"running migration {migration.full_name} up")
-            mm.execute_migration(migration, mode='up')
+        try:
 
-        elif self.cmd_args.all:
-            migrations = [m for m in mm.list_migrations() if m.run_state != 'up']
-
-            for migration in migrations:
+            if self.cmd_args.name:
+                migration = mm.get_migration(self.cmd_args.name)
                 print(f"running migration {migration.full_name} up")
                 mm.execute_migration(migration, mode='up')
 
-        else:
-            raise ValueError(f"either a value for the -n flag must be provided, or the -a flag must be set")
+            elif self.cmd_args.all:
+                migrations = [m for m in mm.list_migrations() if m.run_state != 'up']
+
+                for migration in migrations:
+                    print(f"running migration {migration.full_name} up")
+                    mm.execute_migration(migration, mode='up')
+
+            else:
+                raise ValueError(f"either a value for the -n flag must be provided, or the -a flag must be set")
+
+        except MigrationNotFoundError as e:
+            print(e.args[0])
+            exit()
 
     def down(self):
         self.set_db_connection()
         self._validate_name(f"--name, -n flag value must be provided to run migrate down.")
         dc, mm = get_migration_context(self.db_connection)
 
-        migration = mm.get_migration(self.cmd_args.name)
+        try:
+            migration = mm.get_migration(self.cmd_args.name)
+        except MigrationNotFoundError as e:
+            print(e.args[0])
+            exit()
+
         print(f"running migration {migration.full_name} down")
         mm.execute_migration(migration, mode='down')
 
@@ -107,11 +119,13 @@ class MigrationsEntryPoint(EntryPoint):
         self.set_db_connection()
 
         # try to rollback the migration first, if it is already in the down state, it is likely to fail.
-        try:
-            self.down()
-        except Exception:
-            pass
-
         dc, mm = get_migration_context(self.db_connection)
-        migration = mm.get_migration(self.cmd_args.name)
+
+        try:
+            migration = mm.get_migration(self.cmd_args.name)
+        except MigrationNotFoundError:
+            dummy_file_name = self.cmd_args.name
+            migration = Migration(Path.cwd() / f"{dummy_file_name}.sql")
+
         mm.delete_migration(migration)
+

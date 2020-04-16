@@ -9,8 +9,8 @@ from argparse import Namespace, ArgumentParser
 from redscope.config import DEFAULT_DB_URL
 
 
-def parse_redscope_config() -> Dict:
-    redscope_config = Path.cwd().absolute() / ".redscope"
+def parse_redscope_config(config_path: Path = None) -> Dict:
+    redscope_config = config_path or Path.cwd().absolute() / ".redscope"
 
     if redscope_config.exists():
         config = ConfigParser()
