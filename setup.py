@@ -33,7 +33,8 @@ setup(
     install_requires=[
         'PTable',
         'psycopg2-binary',
-        'python-dotenv'
+        'python-dotenv',
+        'sqlparse'
     ],
     license='MIT',
     packages=find_packages(exclude=('tests*', 'venv', 'database*')),

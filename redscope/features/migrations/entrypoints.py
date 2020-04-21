@@ -128,4 +128,3 @@ class MigrationsEntryPoint(EntryPoint):
             migration = Migration(Path.cwd() / f"{dummy_file_name}.sql")
 
         mm.delete_migration(migration)
-
