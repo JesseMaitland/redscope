@@ -3,7 +3,7 @@ import os
 from setuptools import setup, find_packages
 from setuptools.command.install import install
 
-VERSION = '0.3.2'
+VERSION = '0.3.10'
 
 
 class VerifyVersionCommand(install):
@@ -34,14 +34,14 @@ setup(
         'PTable',
         'psycopg2-binary',
         'python-dotenv',
-        'PyYAML'
+        'sqlparse'
     ],
     license='MIT',
     packages=find_packages(exclude=('tests*', 'venv', 'database*')),
     entry_points={
         'console_scripts': ['redscope-intro = redscope.terminal.__main__:main_introspection',
                             'redscope-migrate = redscope.terminal.__main__:main_migration',
-                            'redscope-unload = redscope.terminal.__main__:main_unload',
+                            'redscope-search = redscope.terminal.__main__:main_search',
                             'redscope = redscope.terminal.__main__:main_project_init']
     },
     download_url="https://github.com/JesseMaitland/redscope",

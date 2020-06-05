@@ -1,20 +1,21 @@
 from typing import Tuple, Dict
+from pathlib import Path
 from prettytable import PrettyTable
 from psycopg2.extensions import connection
 from redscope.env.project_context import DirContext
 from redscope.terminal.tools.entry import EntryPoint
 from redscope.features.migrations.migration_manager import MigrationManager
-
+from redscope.features.migrations.migration_manager import MigrationNotFoundError, Migration
 
 migration_args = {
 
     ('action',): {
         'help': "the migration action you want to preform",
-        'choices': ['up', 'down', 'list', 'new']
+        'choices': ['up', 'down', 'list', 'new', 'remove']
     },
 
     ('--name', '-n'): {
-        'help': "use to set the name of the new migration you wish to create, must be unique.",
+        'help': "use to set the name of the new migration you wish to preform an action on.",
         'default': None,
         'dest': 'name'
     },
@@ -50,56 +51,80 @@ class MigrationsEntryPoint(EntryPoint):
     def new(self):
         self._validate_name(f"--name, -n flag value must be provided to create a new migration file.")
         migration_name = self.cmd_args.name.replace(' ', '-')
+
+        if '-' in [char for char in migration_name]:
+            print("the - char is not allowed in migration names, please use the _ instead")
+            return
+
         dc, mm = get_migration_context()
+
+        if migration_name in [lm.name for lm in mm.list_local_migrations()]:
+            print(f"migration names must be unique, name {migration_name} already exists.")
+            return
+
         migration_name = mm.generate_file_name(migration_name)
         mm.create_file(migration_name)
+        print(f"successfully created migration {migration_name}")
 
     def list(self):
-        dc, mm = get_migration_context()
+        self.set_db_connection()
+        dc, mm = get_migration_context(self.db_connection)
         migrations = mm.list_migrations()
         table = PrettyTable()
-        table.field_names = ['key', 'name']
+        table.field_names = ['key', 'name', 'last state', 'file']
         for migration in migrations:
-            table.add_row([migration.key, migration.name])
+            table.add_row([migration.key, migration.name, migration.run_state, migration.file_name])
         print(table)
 
     def up(self):
         self.set_db_connection()
         dc, mm = get_migration_context(self.db_connection)
 
-        if self.cmd_args.name:
-            migration = mm.get_migration(self.cmd_args.name)
-            mm.execute_migration(migration, mode='up')
+        try:
 
-        elif self.cmd_args.all:
-            migrations = mm.list_outstanding_migrations()
-
-            for migration in migrations:
+            if self.cmd_args.name:
+                migration = mm.get_migration(self.cmd_args.name)
+                print(f"running migration {migration.full_name} up")
                 mm.execute_migration(migration, mode='up')
 
-        else:
-            raise ValueError(f"either --name, -n flag must be provided, or the --all, -a flag must be set to run up")
+            elif self.cmd_args.all:
+                migrations = [m for m in mm.list_migrations() if m.run_state != 'up']
+
+                for migration in migrations:
+                    print(f"running migration {migration.full_name} up")
+                    mm.execute_migration(migration, mode='up')
+
+            else:
+                raise ValueError(f"either a value for the -n flag must be provided, or the -a flag must be set")
+
+        except MigrationNotFoundError as e:
+            print(e.args[0])
+            exit()
 
     def down(self):
         self.set_db_connection()
         self._validate_name(f"--name, -n flag value must be provided to run migrate down.")
         dc, mm = get_migration_context(self.db_connection)
 
-        migration = mm.get_migration(self.cmd_args.name)
+        try:
+            migration = mm.get_migration(self.cmd_args.name)
+        except MigrationNotFoundError as e:
+            print(e.args[0])
+            exit()
+
+        print(f"running migration {migration.full_name} down")
         mm.execute_migration(migration, mode='down')
 
+    def remove(self):
+        self.set_db_connection()
 
-# TODO: refactor into main migration entry
-def list_applied_migrations(db_conn: connection):
-    dc, mm = get_migration_context(db_conn)
-    applied_migrations = mm.list_applied_migrations()
-    for migration in applied_migrations:
-        print(migration.full_name)
+        # try to rollback the migration first, if it is already in the down state, it is likely to fail.
+        dc, mm = get_migration_context(self.db_connection)
 
+        try:
+            migration = mm.get_migration(self.cmd_args.name)
+        except MigrationNotFoundError:
+            dummy_file_name = self.cmd_args.name
+            migration = Migration(Path.cwd() / f"{dummy_file_name}.sql")
 
-# TODO: refactor into main migration entry
-def outstanding_migrations(db_conn: connection):
-    dc, mm = get_migration_context(db_conn)
-    outstanding = mm.list_outstanding_migrations()
-    for out in outstanding:
-        print(out.full_name)
+        mm.delete_migration(migration)

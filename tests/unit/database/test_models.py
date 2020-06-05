@@ -1,3 +1,4 @@
+# flake8: noqa W291
 from redscope.database.models import MigrationDDL, MigrationQueries
 from unittest import TestCase
 
@@ -21,9 +22,17 @@ MIGRATION_INSERT = """INSERT INTO redscope.migrations(key, name, path, last_stat
 
 MIGRATION_UPDATE = """UPDATE redscope.migrations SET last_state = %s, sql = %s WHERE key = %s;"""
 
-MIGRATION_SELECT = """SELECT DISTINCT key, name, path FROM redscope.migrations ORDER BY key;"""
+MIGRATION_SELECT = """SELECT key, name, path, last_state 
+                  FROM redscope.migrations
+                       INNER JOIN (SELECT MAX(created_at) as last_created, key as lkey, name as lname 
+                                     FROM redscope.migrations
+                                   GROUP BY key, name) AS last_records
+                           ON last_records.last_created = redscope.migrations.created_at
+                              AND last_records.lkey = redscope.migrations.key
+                              AND last_records.lname = redscope.migrations.name 
+              ORDER BY key;"""
 
-MIGRATION_DELETE = """DELETE FROM redscope.migrations WHERE key = %s"""
+MIGRATION_DELETE = """DELETE FROM redscope.migrations WHERE name = %s"""
 
 
 class TestDDL(TestCase):

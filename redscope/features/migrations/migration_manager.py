@@ -18,15 +18,23 @@ class MigrationParser:
     def __init__(self, migration: Path) -> None:
         self.migration_path = migration
 
-    def parse(self) -> Migration:
-        with self.migration_path.open(mode='r') as file:
-            up_script = self.get_migration_text(file, self.up_mark, self.down_mark)
-            down_script = self.get_migration_text(file, self.down_mark, self.up_mark)
+    def parse(self, last_state: str = None) -> Migration:
+        up_script = ''
+        down_script = ''
 
-            up_script = ''.join(line for line in up_script)
-            down_script = ''.join(line for line in down_script)
+        try:
+            with self.migration_path.open(mode='r') as file:
+                up_script = self.get_migration_text(file, self.up_mark, self.down_mark)
+                down_script = self.get_migration_text(file, self.down_mark, self.up_mark)
 
-        return Migration(self.migration_path, up_script, down_script)
+                up_script = ''.join(line for line in up_script)
+                down_script = ''.join(line for line in down_script)
+
+        except FileNotFoundError:
+            last_state = f"{last_state} / not available locally"
+
+        finally:
+            return Migration(self.migration_path, up_script, down_script, last_state)
 
     def get_migration_text(self, text: TextIOWrapper, start_mark: str, stop_mark: str) -> str:
         line = text.readline()
@@ -58,7 +66,7 @@ class MigrationManager:
         new_file.touch(exist_ok=True)
         new_file.write_text(self.template_path.read_text())
 
-    def list_migrations(self) -> List[Migration]:
+    def list_local_migrations(self) -> List[Migration]:
         migrations = self.migration_dir.glob('**/*.sql')
         migrations = [MigrationParser(m).parse() for m in migrations]
         self._sort_migrations(migrations)
@@ -69,17 +77,18 @@ class MigrationManager:
         self._sort_migrations(applied_migrations)
         return applied_migrations
 
-    def list_outstanding_migrations(self) -> List[Migration]:
-        all_migrations = self.list_migrations()
-        applied_migrations = self.list_applied_migrations()
-        outstanding = [m for m in all_migrations if m.full_name not in [am.full_name for am in applied_migrations]]
-        self._sort_migrations(outstanding)
-        return outstanding
+    def list_migrations(self) -> List[Migration]:
+        all_local_migrations = self.list_local_migrations()
+        all_applied_migrations = self.list_applied_migrations()
+        all_applied_migrations.extend([lm for lm in all_local_migrations if lm.name not in [am.name for am in all_applied_migrations]])
+        self._sort_migrations(all_applied_migrations)
+        return all_applied_migrations
 
     def get_migration(self, name: str) -> Migration:
-        migration = next((m for m in self.list_migrations() if m.name == name), None)
+        migration = next((m for m in self.list_local_migrations() if m.name == name), None)
         if not migration:
-            raise MigrationNotFoundError(f"no migration found with name {name}")
+            raise MigrationNotFoundError(f"No migration found with name {name}. "
+                                         f"Try running redscope-migrate list to find available migrations")
         else:
             return migration
 
@@ -88,20 +97,27 @@ class MigrationManager:
 
         if mode not in allowed_modes:
             raise ValueError(f"allowed modes are only, up or down, not {mode}")
+        relative_path = migration.path.relative_to(Path.cwd()).as_posix()
 
         if mode == 'up':
             try:
                 self._run_ddl(migration.up)
-                self._run_ddl(migration.insert, migration.key, migration.name, migration.path.as_posix(), mode, migration.up)
+                self._run_ddl(migration.insert, migration.key, migration.name, relative_path, mode, migration.up)
             except Exception:
                 raise
 
         elif mode == 'down':
             try:
                 self._run_ddl(migration.down)
-                self._run_ddl(migration.insert, migration.key, migration.name, migration.path.as_posix(), mode, migration.down)
+                self._run_ddl(migration.insert, migration.key, migration.name, relative_path, mode, migration.down)
             except Exception:
                 raise
+
+    def delete_migration(self, migration: Migration):
+        try:
+            self._run_ddl(migration.delete, migration.name)
+        except Exception:
+            raise
 
     def _run_ddl(self, ddl: str, *values):
         with self.db_connection.cursor() as cursor:
@@ -120,8 +136,9 @@ class MigrationManager:
             except Exception:
                 self.db_connection.rollback()
                 raise
-        return [MigrationParser(Path(result[2]).absolute()).parse() for result in results]
+        return [MigrationParser(Path(result[2]).absolute()).parse(result[3]) for result in results]
 
-    def _sort_migrations(self, migrations: List[Migration]) -> List[Migration]:
+    @staticmethod
+    def _sort_migrations(migrations: List[Migration]) -> List[Migration]:
         migrations.sort(key=lambda x: x.key)
         return migrations

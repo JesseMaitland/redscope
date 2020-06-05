@@ -56,23 +56,20 @@ class Table(DDL):
 
         for line in ddl_lines:
             to_keep = line
-            if 'CONSTRAINT' in line:
+            to_keep = to_keep.rstrip(',')
+
+            if 'CONSTRAINT' in to_keep:
                 continue
 
-            elif 'DEFAULT' in line:
-                to_keep = line.split('DEFAULT')[0].rstrip() + ','
-                lines_to_keep.append(to_keep)
+            to_keep = to_keep.split('DEFAULT')[0].rstrip()
+            to_keep = to_keep.split('NOT NULL')[0].rstrip()
+            to_keep = to_keep.split('ENCODE')[0].rstrip()
 
-            elif 'NOT NULL' in line:
-                to_keep = line.split('NOT NULL')[0].rstrip() + ','
-                lines_to_keep.append(to_keep)
+            lines_to_keep.append(to_keep)
 
-            else:
-                lines_to_keep.append(to_keep)
-
-        lines_to_keep[-1] = lines_to_keep[-1].rstrip(',')
-
-        return '\n'.join(lines_to_keep)
+        lines_to_keep = [l + ',' if i < len(lines_to_keep) - 1 else l for i, l in enumerate(lines_to_keep)]
+        columns = '\n'.join(lines_to_keep)
+        return f"CREATE TABLE IF NOT EXISTS {self.full_name}\n(\n{columns}\n);"
 
     def add_constraint(self, constraint: Constraint) -> None:
         self.constraints.append(constraint)

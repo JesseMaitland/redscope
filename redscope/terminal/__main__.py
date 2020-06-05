@@ -1,9 +1,8 @@
-from pathlib import Path
 
 args_config = {
     ('--env-file', '-ef'): {
         'help': "the name of the .env file you would like to load. Must be located in the project root. Defaults to .env",
-        'default': Path.cwd() / ".env",
+        'default': ".env",
         'dest': 'env_file'
     },
 
@@ -33,7 +32,7 @@ def main_project_init():
     InitProjectEntryPoint(args_config=args_config).call()
 
 
-def main_unload():
-    from redscope.features.unload.entrypoints import unload_args, UnloadEntryPoint
-    args_config.update(unload_args)
-    UnloadEntryPoint(args_config=args_config).call()
+def main_search():
+    from redscope.features.search.entrypoints import search_args, SearchFunctionEntryPoint
+    args_config.update(search_args)
+    SearchFunctionEntryPoint(args_config=args_config).call()

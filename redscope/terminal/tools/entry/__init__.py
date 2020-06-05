@@ -1,11 +1,21 @@
 import dotenv
 import os
 import psycopg2
+from configparser import ConfigParser
 from typing import Dict
 from pathlib import Path
 from abc import ABC, abstractmethod
 from argparse import Namespace, ArgumentParser
 from redscope.config import DEFAULT_DB_URL
+
+
+def parse_redscope_config(config_path: Path = None) -> Dict:
+    redscope_config = config_path or Path.cwd().absolute() / ".redscope"
+
+    if redscope_config.exists():
+        config = ConfigParser()
+        config.read(redscope_config)
+        return config
 
 
 def parse_terminal_args(args_config: Dict) -> Namespace:
@@ -49,12 +59,24 @@ class EntryPoint(ABC):
 
     def __init__(self, args_config: Dict):
         self.cmd_args: Namespace = parse_terminal_args(args_config)
+        self.config = parse_redscope_config() or {}
         self.db_connection = None
-        load_redscope_env(self.cmd_args.env_file)
+
+        try:
+            self.env_file_name = self.config['environment']['env_file_name']
+        except KeyError:
+            self.env_file_name = self.cmd_args.env_file
+
+        try:
+            self.env_var_name = self.config['environment']['env_var_name']
+        except KeyError:
+            self.env_var_name = self.cmd_args.env_var
+
+        load_redscope_env(Path.cwd() / self.env_file_name)
 
     @abstractmethod
     def call(self) -> None:
         pass
 
     def set_db_connection(self):
-        self.db_connection = get_db_connection(self.cmd_args.env_var)
+        self.db_connection = get_db_connection(self.env_var_name)
