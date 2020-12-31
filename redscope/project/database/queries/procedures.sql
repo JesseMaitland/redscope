@@ -1,6 +1,6 @@
 SELECT n.nspname AS schema,
-       p.proname AS function_name,
-       pg_get_functiondef(prooid) as function_def
+       p.proname AS name,
+       pg_get_functiondef(prooid) as ddl
   FROM pg_proc_info p
        INNER JOIN pg_namespace n
           ON p.pronamespace = n.oid

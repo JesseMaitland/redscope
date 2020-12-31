@@ -1,5 +1,5 @@
 -- query used to retrieve unique schema names
-SELECT DISTINCT nspname AS schema_name
+SELECT DISTINCT nspname AS name
   FROM pg_namespace ns
        INNER JOIN pg_class cl
           ON ns.oid = cl.relnamespace
