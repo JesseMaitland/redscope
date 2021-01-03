@@ -8,15 +8,20 @@ from redscope.project.database.models import Table
 
 @init_redscope_env(provide_config=True)
 def inspect(cmd: Namespace, config: ConfigParser) -> None:
-
     to_inspect = ['columns', 'views', 'functions', 'procedures'] if cmd.o == 'all' else [cmd.o]
 
     for item in to_inspect:
         print(f"Introspecting ----- {item}")
-        results = fetch_and_map_query_result(connection_name=config['redshift']['connection'], query_name=item)
+        results = fetch_and_map_query_result(config['redshift']['connection'], item)
 
         if item == 'columns':
             results = Table.from_columns(results)
+            constraints = fetch_and_map_query_result(config['redshift']['connection'], 'constraints')
+
+            for result in results:
+                result.add_constraints(constraints)
+                result.save_file(SCHEMA_DIR)
+            continue
 
     for result in results:
         result.save_file(SCHEMA_DIR)

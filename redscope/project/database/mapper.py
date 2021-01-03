@@ -1,6 +1,6 @@
 from typing import List, Tuple, Type
 from redscope.project.database.models import (
-    DDL, Schema, View, Procedure, Function, Column
+    DDL, Schema, View, Procedure, Function, Column, Constraint
 )
 
 

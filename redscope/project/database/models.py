@@ -103,19 +103,46 @@ class Column(DDL):
         return f"   {self.name} {' ' * (padding - self.offset)}{self.data_type} {self.not_null} {self.default} {self.encoding}"
 
 
+class Constraint(DDL):
+
+    def __init__(self, name: str, schema: str, table: str, column: str, ddl: str):
+        super(Constraint, self).__init__(name=name, schema=schema)
+        self.table = table
+        self._ddl = ddl
+        self._column = column
+
+    def ddl(self) -> str:
+        return f"CONSTRAINT {self.name} {self._ddl}"
+
+    def format_ddl(self) -> str:
+        return f"   CONSTRAINT {self.name} {self._ddl}"
+
+
+
 class Table(DDL):
 
-    template = Path
-
-    def __init__(self, schema: str, name: str, columns: List[Column] = None) -> None:
+    def __init__(self, schema: str, name: str, columns: List[Column] = None, constraints: List[Constraint] = None) -> None:
         super(Table, self).__init__(schema=schema, name=name)
         self.columns = columns or []
         self.format_offset = max(columns, key=lambda x: x.offset).offset
+        self.constraints = constraints or []
+
+    def column_ddl(self) -> str:
+        return ',\n'.join([c.format_ddl(self.format_offset) for c in self.columns])
+
+    def constraint_ddl(self) -> str:
+        return ',\n'.join([c.format_ddl() for c in self.constraints])
 
     def ddl(self) -> str:
-        column_ddl = ',\n'.join([c.format_ddl(self.format_offset) for c in self.columns])
-        column_ddl = column_ddl.rstrip(',')
-        return f"CREATE TABLE IF NOT EXISTS {self.schema}.{self.name}\n(\n{column_ddl}\n);"
+        column_ddl = self.column_ddl()
+
+        if self.constraints:
+            constraints = self.constraint_ddl() + '\n'
+            column_ddl = column_ddl + ','
+        else:
+            constraints = ''
+
+        return f"CREATE TABLE IF NOT EXISTS {self.schema}.{self.name}\n(\n{column_ddl}\n{constraints});"
 
     @classmethod
     def from_columns(cls, columns: List[Column]) -> List['Table']:
@@ -142,3 +169,8 @@ class Table(DDL):
         for group in groups.values():
             group.sort(key=lambda x: x.index)
         return groups
+
+    def add_constraints(self, constraints: List[Constraint]) -> None:
+        for constraint in constraints:
+            if constraint.schema == self.schema and constraint.table == self.name:
+                self.constraints.append(constraint)
