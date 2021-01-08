@@ -1,13 +1,13 @@
 from setuptools import setup, find_packages
 
-VERSION = '0.0.1'
+VERSION = '0.3.10'
 
 
 setup(
     name='redscope',
     version=VERSION,
-    author='Sly Stalone',
-    discription='A great cli tool!',
+    author='Jesse Maitland',
+    discription='A cli tool for introspecting AWS redshift schema ddl',
     include_package_data=True,
     packages=find_packages(exclude=('tests*', 'venv')),
     entry_points={'console_scripts': ['redscope = redscope.__main__:main']},
