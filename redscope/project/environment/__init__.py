@@ -1,3 +1,4 @@
+# flake8: noqa
 from .paths import (
     PROJECT_ROOT,
     SCHEMA_DIR,

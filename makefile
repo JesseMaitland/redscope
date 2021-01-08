@@ -45,7 +45,7 @@ lint:
 
 test:
 	. venv/bin/activate \
-	&& python -m unittest discover -v tests/${TEST_DIR}
+	&& python -m unittest discover -v ${TEST_DIR}
 
 qa:
 	make test

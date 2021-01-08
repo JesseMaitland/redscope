@@ -13,7 +13,8 @@ def parse_args():
     init_parser.set_defaults(func=init)
 
     init_parser = sub_parsers.add_parser('inspect')
-    init_parser.add_argument('-o', choices=['schemas', 'tables', 'functions', 'procedures', 'views', 'all'], default='all')
+    init_parser.add_argument('-o', choices=['schemas', 'tables', 'functions',
+                                            'procedures', 'views', 'all'], default='all')
     init_parser.set_defaults(func=inspect)
 
     return parser.parse_args()

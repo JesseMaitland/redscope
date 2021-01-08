@@ -215,3 +215,5 @@ cython_debug/
 
 .redscope
 redshift
+
+playground.py

@@ -23,7 +23,7 @@ def inspect(cmd: Namespace, config: ConfigParser) -> None:
                 result.save_file(SCHEMA_DIR)
             continue
 
-    for result in results:
-        result.save_file(SCHEMA_DIR)
+        for result in results:
+            result.save_file(SCHEMA_DIR)
 
     print("Introspection complete. Generated DDL files saved under /redshift/redscope/schema")

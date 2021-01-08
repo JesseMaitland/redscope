@@ -1,3 +1,4 @@
+import sqlparse
 from abc import ABC, abstractmethod
 from typing import List, Tuple
 from itertools import groupby
@@ -68,9 +69,9 @@ class View(UserDefinedObject):
 
     def ddl(self) -> str:
         if 'CREATE VIEW' in self._ddl:
-            return self._ddl
+            return sqlparse.format(self._ddl, reindent_aligned=True)
         else:
-            return f"CREATE VIEW {self.qualified_name} \n AS \n {self._ddl}"
+            return sqlparse.format(f"CREATE VIEW {self.qualified_name} \n AS \n {self._ddl}", reindent_aligned=True)
 
 
 class Procedure(UserDefinedObject):
@@ -83,7 +84,8 @@ class Function(UserDefinedObject):
 
 class Column(DDL):
 
-    def __init__(self, schema: str, name: str, table: str, index: int, data_type: str, default: str, not_null: str, encoding: str) -> None:
+    def __init__(self, schema: str, name: str, table: str, index: int, data_type: str, default: str, not_null: str,
+                 encoding: str) -> None:
         super(Column, self).__init__(schema=schema, name=name)
         self.table = table
         self.index = index
@@ -100,7 +102,8 @@ class Column(DDL):
         return f"{self.name} {self.data_type} {self.not_null} {self.default} {self.encoding}"
 
     def format_ddl(self, padding: int) -> str:
-        return f"   {self.name} {' ' * (padding - self.offset)}{self.data_type} {self.not_null} {self.default} {self.encoding}"
+        return f"   {self.name} {' ' * (padding - self.offset)}" \
+               f"{self.data_type} {self.not_null} {self.default} {self.encoding}"
 
 
 class Constraint(DDL):
@@ -118,10 +121,10 @@ class Constraint(DDL):
         return f"   CONSTRAINT {self.name} {self._ddl}"
 
 
-
 class Table(DDL):
 
-    def __init__(self, schema: str, name: str, columns: List[Column] = None, constraints: List[Constraint] = None) -> None:
+    def __init__(self, schema: str, name: str, columns: List[Column] = None,
+                 constraints: List[Constraint] = None) -> None:
         super(Table, self).__init__(schema=schema, name=name)
         self.columns = columns or []
         self.format_offset = max(columns, key=lambda x: x.offset).offset

@@ -3,10 +3,14 @@ import psycopg2
 from typing import Tuple
 
 
-def execute_query(connection_name: str, query: str, include_columns: bool = True) -> Tuple:
+def execute_query(connection_name: str, query: str, include_columns: bool = True, *params) -> Tuple:
     with psycopg2.connect(os.getenv(connection_name)) as connection:
         with connection.cursor() as cursor:
-            cursor.execute(query)
+            if params:
+                print(f"we run this {params}")
+                cursor.execute(query, params)
+            else:
+                cursor.execute(query)
             result = cursor.fetchall()
 
             if include_columns:
