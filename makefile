@@ -64,6 +64,6 @@ release:
   ifdef version
 		python bin/release.py --version $(version)
   else
-	  python bin/release
+	  python bin/release.py
   endif
 
