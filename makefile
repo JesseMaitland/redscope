@@ -62,7 +62,7 @@ build:
 
 release:
   ifdef version
-		./bin/release --version $(version)
+		./bin/release.py --version $(version)
   else
 	  ./bin/release
   endif
