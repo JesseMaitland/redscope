@@ -26,8 +26,6 @@ before_script:
 run:
   only:
     - tags
-  except:
-    - branches
   script:
     - make qa
     - make build
