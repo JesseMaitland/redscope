@@ -5,10 +5,10 @@ import re
 import argparse
 from pathlib import Path
 
-project_root = Path(__file__).absolute().parent.parent / 'redscope'
-setup_path = project_root / "__init__.py"
+project_root = Path(__file__).absolute().parent.parent
+setup_path = "setup.py"
 number_pattern = r"[0-9]+\.[0-9]+\.[0-9]+"
-version_pattern = fr"__version__ = {number_pattern}"
+version_pattern = fr"VERSION = {number_pattern}"
 
 
 commands = {
