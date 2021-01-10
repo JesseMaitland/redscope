@@ -11,7 +11,7 @@ export TEST_DIR = tests
 
 py-init:
 	if [[ -d ./venv ]]; then rm -rf venv; fi \
-	&& python3.6 -m venv venv \
+	&& python -m venv venv \
 	&& . venv/bin/activate \
 	&& pip install --upgrade pip setuptools wheel \
 	&& pip install -r ${REQ_FILE}
