@@ -19,7 +19,6 @@ Pygments==2.7.3
 pyparsing==2.4.7
 python-dotenv==0.15.0
 readme-renderer==28.0
--e git+git@github.com:JesseMaitland/redscope.git@30bd723ec1854ce8b5871a0492ec03a7e6ec3202#egg=redscope
 requests==2.25.1
 requests-toolbelt==0.9.1
 rfc3986==1.4.0
