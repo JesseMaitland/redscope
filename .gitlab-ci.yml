@@ -23,19 +23,9 @@ before_script:
   - apt-get install -y apt-utils make build-essential postgresql-client default-libmysqlclient-dev
   - make py-init
 
-test:
+run:
   script:
-    - make test
-
-lint:
-  script:
-    - make lint
-
-build:
-  script:
+    - make qa
     - make build
-
-deploy:
-  script:
     - . venv/bin/activate
     - twine upload --verbose -u $PYPI_USERNAME -p $PYPI_PASSWORD dist/*
