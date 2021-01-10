@@ -20,6 +20,7 @@ cache:
 
 before_script:
   - apk add --update make
+  - apk add postgresql-client
   - make py-init
 
 test:
