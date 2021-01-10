@@ -19,9 +19,8 @@ cache:
     - venv/
 
 before_script:
-  - apk add --update make
+  - apk add --update alpine-sdk
   - apk add postgresql-dev
-  - apk add postgresql-client
   - make py-init
 
 test:
