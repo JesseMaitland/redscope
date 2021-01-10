@@ -24,6 +24,10 @@ before_script:
   - make py-init
 
 run:
+  only:
+    - tags
+  except:
+    - branches
   script:
     - make qa
     - make build
