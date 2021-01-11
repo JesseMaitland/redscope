@@ -1,0 +1,1 @@
+include redscope/project/database/queries/*.sql
