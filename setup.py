@@ -1,21 +1,14 @@
 import os
-import sys
 from setuptools import setup, find_packages
-from setuptools.command.install import install
-
-VERSION = '0.4.2'
 
 
-class VerifyVersionCommand(install):
-    """Custom command to verify that the git tag matches our version"""
-    description = 'verify that the git tag matches our version'
+def version() -> str:
+    version = os.getenv('CI_COMMIT_TAG')
 
-    def run(self):
-        tag = os.getenv('CI_COMMIT_TAG')
+    if not version:
+        raise ValueError("version tag expected but not found in environment")
 
-        if tag != VERSION:
-            info = "Git tag: {0} does not match the version of this app: {1}".format(tag, VERSION)
-            sys.exit(info)
+    return version
 
 
 def readme():
@@ -25,7 +18,7 @@ def readme():
 
 setup(
     name='redscope',
-    version=VERSION,
+    version=version(),
     author='Jesse Maitland',
     discription='A cli tool for introspecting AWS redshift schema ddl',
     long_description=readme(),
@@ -39,8 +32,5 @@ setup(
     packages=find_packages(exclude=('tests*', 'venv')),
     entry_points={'console_scripts': ['redscope = redscope.__main__:main']},
     python_requires='>=3',
-    long_description_content_type="text/markdown",
-    cmdclass={
-        'verify': VerifyVersionCommand,
-    }
+    long_description_content_type="text/markdown"
 )
