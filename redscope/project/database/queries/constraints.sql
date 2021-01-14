@@ -1,5 +1,6 @@
 -- gets all column constraints
-SELECT ns.nspname as schema,
+SELECT DISTINCT
+       ns.nspname as schema,
        c.relname  as "table",
        a.attname  as "column",
        pg_get_constraintdef(cn.oid) as ddl,

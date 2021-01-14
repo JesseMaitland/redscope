@@ -25,7 +25,6 @@ setup(
     install_requires=[
         'psycopg2-binary',
         'python-dotenv',
-        'pyyaml',
         'sqlparse'
     ],
     include_package_data=True,
