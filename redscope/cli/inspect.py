@@ -1,6 +1,7 @@
 from configparser import ConfigParser
 from argparse import Namespace
 
+# Redscope Project deps
 from redscope.project.database import fetch_and_map_query_result
 from redscope.project.environment import init_redscope_env, SCHEMA_DIR
 from redscope.project.database.models import Table

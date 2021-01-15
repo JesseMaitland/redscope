@@ -3,14 +3,7 @@ import psycopg2
 from psycopg2.extensions import connection
 from configparser import ConfigParser
 from dotenv import load_dotenv
-from jinja2 import PackageLoader, Environment
-
 from redscope.project.environment import REDSCOPE_CONFIG_PATH
-
-
-def get_jinja_environment() -> Environment:
-    loader = PackageLoader(package_name='redscope', package_path='templates')
-    return Environment(loader=loader, trim_blocks=True, lstrip_blocks=True)
 
 
 def get_redscope_config() -> ConfigParser:

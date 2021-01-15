@@ -2,7 +2,10 @@ from pathlib import Path
 
 
 class SqlManager:
-
+    """
+    Class is used to access the queries stored in the projects query directory. This approach
+    removes the need to store SQL statements in raw python strings.
+    """
     def __init__(self):
         self.root = Path(__file__).absolute().parent
 
