@@ -15,7 +15,7 @@ from redscope.project.environment import (
 class TestGetRedshiftConfig(TestCase):
 
     def setUp(self) -> None:
-        self.config_path = Path(__file__).parent.parent / "fixtures" / ".redscope"
+        self.config_path = Path(__file__).parent.parent / ".testconfig"
         self.dummy_config = """
         [env]
         file = my_test_file.env

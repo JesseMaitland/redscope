@@ -1,0 +1,5 @@
+[env]
+file = my_test_file.env
+
+[redshift]
+connection = TEST_REDSHIFT_URL
