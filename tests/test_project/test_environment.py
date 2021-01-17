@@ -8,8 +8,7 @@ from configparser import ConfigParser
 from redscope.project.environment import (
     get_redshift_connection,
     get_redscope_config,
-    load_redscope_env,
-    init_redscope_env
+    load_redscope_env
 )
 
 

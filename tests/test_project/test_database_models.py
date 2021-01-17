@@ -2,7 +2,7 @@ from unittest import TestCase
 from unittest.mock import MagicMock
 from pathlib import Path
 from redscope.project.database.models import (
-    Table, View, Function, Procedure, Column, Constraint, Schema, DDL, UserDefinedObject
+    View, Function, Procedure, Schema, DDL, UserDefinedObject
 )
 
 
