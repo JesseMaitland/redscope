@@ -1,2 +1,2 @@
 def format_model_name(name: str) -> str:
-    return name.rstrip('s').capitalize()
+    return name.lower().rstrip('s').capitalize()
