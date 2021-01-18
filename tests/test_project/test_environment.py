@@ -25,6 +25,7 @@ class TestGetRedshiftConfig(TestCase):
         """
 
     def test_load_redscope_config(self) -> None:
+        print(self.config_path.as_posix())
         expected_config = ConfigParser()
         expected_config.read_string(self.dummy_config)
 
