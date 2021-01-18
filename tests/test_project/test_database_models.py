@@ -87,3 +87,23 @@ class TestUserDefinedObjects(TestCase):
     def test_procedure_type(self) -> None:
         self.assertTrue(issubclass(Procedure, DDL))
         self.assertTrue(issubclass(Procedure, UserDefinedObject))
+
+
+class TestViewLogic(TestCase):
+
+    def setUp(self) -> None:
+        self.view = View('foo', 'bar', 'SELECT * FROM foo.bar;')
+        self.view_with_create = View('foo', 'bar', 'CREATE VIEW foo.bar AS SELECT * FROM foo.bar;')
+        self.view_with_replace = View('foo', 'bar', 'CREATE OR REPLACE VIEW foo.bar AS SELECT * FROM spam.beans;')
+
+    def test_normal_view_ddl(self) -> None:
+        view_ddl = ''.join(self.view.ddl().split())
+        self.assertEqual(view_ddl, ''.join('CREATE VIEW foo.bar AS SELECT * FROM foo.bar;'.split()))
+
+    def test_view_with_create(self) -> None:
+        view_ddl = ''.join(self.view_with_create.ddl().split())
+        self.assertEqual(view_ddl, ''.join('CREATE VIEW foo.bar AS SELECT * FROM foo.bar;'.split()))
+
+    def test_view_with_replace(self) -> None:
+        view_ddl = ''.join(self.view_with_replace.ddl().split())
+        self.assertEqual(view_ddl, ''.join('CREATE OR REPLACE VIEW foo.bar AS SELECT * FROM spam.beans;'.split()))
