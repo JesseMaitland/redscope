@@ -10,6 +10,7 @@ class DDL(ABC):
     Base class used to establish what a DDL object looks like. Any DDL in redshift can be
     represented as this object.
     """
+
     def __init__(self, schema: str, name: str) -> None:
         """
         Each database ddl object must belong to a schema, and must have a name.
@@ -74,6 +75,7 @@ class Schema(DDL):
     """
     DDL object which represents a database schema
     """
+
     def __init__(self, name: str) -> None:
         super(Schema, self).__init__(name=name, schema=name)
 
@@ -99,6 +101,7 @@ class UserDefinedObject(DDL):
     Since the ddl is stored in its entirety in the database, there is no need for formatting rules
     when using these objects.
     """
+
     def __init__(self, schema: str, name: str, ddl: str) -> None:
         super(UserDefinedObject, self).__init__(schema=schema, name=name)
         self._ddl = ddl
@@ -137,6 +140,23 @@ class Function(UserDefinedObject):
     pass
 
 
+class Diststyle(UserDefinedObject):
+    """
+    Class just allows something to be called a Diststyle object
+    """
+
+    def __init__(self, schema: str, table: str, ddl: str) -> None:
+        super(Diststyle, self).__init__(schema=schema, name=table, ddl=ddl)
+        self.table = table
+
+
+class Distkey(Diststyle):
+    """
+    Class allows something to be called a Distkey object.
+    """
+    pass
+
+
 class Column(DDL):
 
     def __init__(self, schema: str, name: str, table: str, index: int, data_type: str, default: str, not_null: str,
@@ -154,14 +174,13 @@ class Column(DDL):
         return len(self.name)
 
     def ddl(self) -> str:
-        return f"{self.name} {self.data_type} {self.not_null} {self.default} {self.encoding}"
+        return ' '.join(f"{self.name}{self.data_type}{self.not_null}{self.default}{self.encoding}".split())
 
     def format_ddl(self, padding: int) -> str:
         return f"   {self.name} {' ' * (padding - self.offset)}" \
                f"{self.data_type} {self.not_null} {self.default} {self.encoding}"
 
     def simple_ddl(self, padding: int) -> str:
-
         return self.format_ddl(padding).split(['ENCODE'])[0]
 
 
@@ -188,6 +207,8 @@ class Table(DDL):
         self.columns = columns or []
         self.format_offset = max(columns, key=lambda x: x.offset).offset
         self.constraints = constraints or []
+        self.diststyle = ''
+        self.distkey = ''
 
     def column_ddl(self, simple: bool = False) -> str:
         if not simple:
@@ -207,7 +228,8 @@ class Table(DDL):
         else:
             constraints = ''
 
-        return f"CREATE TABLE IF NOT EXISTS {self.schema}.{self.name}\n(\n{column_ddl}\n{constraints});"
+        return f"CREATE TABLE IF NOT EXISTS {self.schema}.{self.name}\n(\n{column_ddl}\n{constraints}\n)" \
+               f"\n{self.diststyle}\n{self.distkey};"
 
     def simple_ddl(self, schema: str = None, external: bool = False) -> str:
         column_ddl = self.column_ddl(simple=True)
@@ -250,3 +272,15 @@ class Table(DDL):
         for constraint in constraints:
             if constraint.schema == self.schema and constraint.table == self.name:
                 self.constraints.append(constraint)
+
+    def set_dist_style(self, diststyle: List[Diststyle]) -> None:
+        for ds in diststyle:
+            if ds.schema == self.schema and ds.table == self.name:
+                self.diststyle = ds.ddl()
+                break
+
+    def set_dist_keys(self, distkey: List[Distkey]) -> None:
+        for k in distkey:
+            if k.schema == self.schema and k.table == self.name:
+                self.distkey = k.ddl()
+                break
