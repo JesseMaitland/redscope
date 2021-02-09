@@ -75,13 +75,17 @@ class RedshiftSchema:
             results = fetch_and_map_query_result(self.connection_name, 'columns')
             results = Table.from_columns(results)
             constraints = fetch_and_map_query_result(self.connection_name, 'constraints')
+            dist_style = fetch_and_map_query_result(self.connection_name, 'diststyle')
+            dist_key = fetch_and_map_query_result(self.connection_name, 'distkey')
 
             for result in results:
                 result.add_constraints(constraints)
+                result.set_dist_style(dist_style)
+                result.set_dist_keys(dist_key)
 
             return {f"{d.schema}.{d.name}": d for d in results}
 
-        elif self._kind in ['views', 'tables', 'functions', 'procedures']:
+        elif self._kind in ['views', 'functions', 'procedures']:
             result = fetch_and_map_query_result(self.connection_name, self._kind, True)
             self.clear()
             return {f"{d.schema}.{d.name}": d for d in result}

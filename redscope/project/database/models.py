@@ -181,7 +181,7 @@ class Column(DDL):
                f"{self.data_type} {self.not_null} {self.default} {self.encoding}"
 
     def simple_ddl(self, padding: int) -> str:
-        return self.format_ddl(padding).split(['ENCODE'])[0]
+        return self.format_ddl(padding).split('ENCODE')[0].rstrip(',').rstrip()
 
 
 class Constraint(DDL):
