@@ -23,7 +23,7 @@ requests==2.25.1
 requests-toolbelt==0.9.1
 rfc3986==1.4.0
 six==1.15.0
-sqlparse==0.4.1
+sqlparse==0.4.2
 tqdm==4.55.1
 twine==3.3.0
 typing-extensions==3.7.4.3
